@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+      padding: 16px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .logo span:first-child { color: #fff; }
+    .logo span:last-child { color: #10b981; }
+
+    /* Products Grid */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .product-card {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .product-card:hover {
+      border-color: #10b981;
+    }
+
+    .product-card.selected {
+      border-color: #10b981;
+      background: #10b98110;
+    }
+
+    .product-image {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      background: #0a0a0a;
+    }
+
+    .product-name {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .product-price {
+      color: #10b981;
+      font-size: 14px;
+    }
+
+    /* Mockup Display */
+    .mockup-section {
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .mockup-image {
+      width: 100%;
+      max-width: 300px;
+      margin: 0 auto 16px;
+      display: block;
+      border-radius: 8px;
+    }
+
+    .mockup-details {
+      text-align: center;
+    }
+
+    .mockup-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .mockup-price {
+      font-size: 24px;
+      color: #10b981;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    /* Options */
+    .options-row {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .option-btn {
+      padding: 8px 16px;
+      border: 1px solid #333;
+      background: #0a0a0a;
+      color: #fff;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .option-btn:hover {
+      border-color: #10b981;
+    }
+
+    .option-btn.selected {
+      background: #10b981;
+      border-color: #10b981;
+      color: #000;
+    }
+
+    /* Color swatches */
+    .color-swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid #333;
+      cursor: pointer;
+    }
+
+    .color-swatch.selected {
+      border-color: #10b981;
+      box-shadow: 0 0 0 2px #10b981;
+    }
+
+    .color-white { background: #fff; }
+    .color-black { background: #222; }
+    .color-navy { background: #1e3a5f; }
+    .color-gray { background: #6b7280; }
+
+    /* Buttons */
+    .btn-primary {
+      width: 100%;
+      padding: 14px 24px;
+      background: #10b981;
+      color: #000;
+      border: none;
+      border-radius: 24px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: #0d9668;
+    }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 12px 24px;
+      background: transparent;
+      color: #fff;
+      border: 1px solid #333;
+      border-radius: 24px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .btn-secondary:hover {
+      border-color: #10b981;
+    }
+
+    /* Checkout */
+    .checkout-section {
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .checkout-item {
+      display: flex;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #333;
+      margin-bottom: 12px;
+    }
+
+    .checkout-item-image {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .checkout-item-details {
+      flex: 1;
+    }
+
+    .checkout-totals {
+      font-size: 14px;
+    }
+
+    .checkout-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .checkout-total {
+      font-size: 18px;
+      font-weight: bold;
+      border-top: 1px solid #333;
+      padding-top: 8px;
+      margin-top: 8px;
+    }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo"><span>Blank</span><span>Pop</span></div>
+    </div>
+
+    <!-- Products Grid View -->
+    <div id="products-view" class="hidden">
+      <div class="products-grid" id="products-grid"></div>
+    </div>
+
+    <!-- Mockup View -->
+    <div id="mockup-view" class="hidden">
+      <div class="mockup-section">
+        <img id="mockup-image" class="mockup-image" src="" alt="Product mockup">
+        <div class="mockup-details">
+          <div id="mockup-title" class="mockup-title"></div>
+          <div id="mockup-price" class="mockup-price"></div>
+
+          <div class="options-row" id="color-options"></div>
+          <div class="options-row" id="size-options"></div>
+
+          <button id="buy-btn" class="btn-primary">Buy Now</button>
+          <button id="back-btn" class="btn-secondary">Choose Different Product</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Checkout View -->
+    <div id="checkout-view" class="hidden">
+      <div class="checkout-section">
+        <h3 style="margin-bottom: 12px;">Order Summary</h3>
+        <div id="checkout-items"></div>
+        <div class="checkout-totals">
+          <div class="checkout-row">
+            <span>Subtotal</span>
+            <span id="checkout-subtotal">$0.00</span>
+          </div>
+          <div class="checkout-row">
+            <span>Shipping</span>
+            <span id="checkout-shipping">$5.99</span>
+          </div>
+          <div class="checkout-row checkout-total">
+            <span>Total</span>
+            <span id="checkout-total">$0.00</span>
+          </div>
+        </div>
+        <button id="complete-checkout-btn" class="btn-primary" style="margin-top: 16px;">
+          Complete Purchase
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State
+    let currentState = {
+      view: 'products',
+      products: [],
+      selectedProduct: null,
+      selectedColor: null,
+      selectedSize: null,
+      designId: null,
+      checkout: null
+    };
+
+    // Product images mapping
+    const productImages = {
+      'tshirt-white': '/images/tshirt-white.svg',
+      'tshirt-black': '/images/tshirt-black.svg',
+      'tshirt-navy': '/images/tshirt-navy.svg',
+      'hoodie-white': '/images/hoodie-white.svg',
+      'hoodie-black': '/images/hoodie-black.svg',
+      'hoodie-gray': '/images/hoodie-gray.svg',
+      'mug-white': '/images/mug-white.svg',
+      'poster': '/images/poster.svg'
+    };
+
+    // Initialize
+    function init() {
+      // Listen for tool output updates from ChatGPT
+      window.addEventListener('openai:set_globals', handleUpdate);
+
+      // Check if we already have data
+      if (window.openai?.toolOutput) {
+        handleUpdate();
+      }
+
+      // Button handlers
+      document.getElementById('buy-btn')?.addEventListener('click', handleBuyClick);
+      document.getElementById('back-btn')?.addEventListener('click', () => showView('products'));
+      document.getElementById('complete-checkout-btn')?.addEventListener('click', handleCompleteCheckout);
+    }
+
+    function handleUpdate() {
+      const data = window.openai?.toolOutput;
+      if (!data) return;
+
+      console.log('Tool output:', data);
+
+      switch (data.action) {
+        case 'show_products':
+          currentState.products = data.products || [];
+          renderProducts();
+          showView('products');
+          break;
+
+        case 'show_design':
+          currentState.products = data.products || currentState.products;
+          currentState.designId = data.design?.id;
+          renderProducts();
+          showView('products');
+          break;
+
+        case 'show_mockup':
+          currentState.selectedProduct = currentState.products.find(p => p.id === data.mockup.productId);
+          currentState.selectedColor = data.mockup.color;
+          currentState.selectedSize = data.mockup.size;
+          renderMockup(data.mockup);
+          showView('mockup');
+          break;
+
+        case 'checkout':
+          currentState.checkout = data.checkout;
+          renderCheckout(data.checkout);
+          showView('checkout');
+          break;
+      }
+    }
+
+    function showView(view) {
+      currentState.view = view;
+      document.getElementById('products-view').classList.toggle('hidden', view !== 'products');
+      document.getElementById('mockup-view').classList.toggle('hidden', view !== 'mockup');
+      document.getElementById('checkout-view').classList.toggle('hidden', view !== 'checkout');
+    }
+
+    function renderProducts() {
+      const grid = document.getElementById('products-grid');
+      grid.innerHTML = currentState.products.map(product => {
+        const imageKey = product.colors?.[0] ? `${product.id}-${product.colors[0]}` : product.id;
+        const imageUrl = productImages[imageKey] || productImages[product.id] || '/images/tshirt-white.svg';
+
+        return `
+          <div class="product-card" onclick="selectProduct('${product.id}')">
+            <img class="product-image" src="${imageUrl}" alt="${product.name}">
+            <div class="product-name">${product.name}</div>
+            <div class="product-price">from $${product.basePrice}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectProduct(productId) {
+      const product = currentState.products.find(p => p.id === productId);
+      if (!product) return;
+
+      // Call the show_mockup tool
+      if (window.openai?.callTool) {
+        window.openai.callTool('show_mockup', {
+          designId: currentState.designId || 'default',
+          productId: productId,
+          color: product.colors?.[0] || '',
+          size: product.sizes?.[0] || ''
+        });
+      }
+    }
+
+    function renderMockup(mockup) {
+      const product = currentState.selectedProduct;
+      if (!product) return;
+
+      const imageKey = mockup.color ? `${mockup.productId}-${mockup.color}` : mockup.productId;
+      const imageUrl = productImages[imageKey] || productImages[mockup.productId] || mockup.imageUrl;
+
+      document.getElementById('mockup-image').src = imageUrl;
+      document.getElementById('mockup-title').textContent = `${mockup.color ? mockup.color.charAt(0).toUpperCase() + mockup.color.slice(1) + ' ' : ''}${mockup.product}`;
+      document.getElementById('mockup-price').textContent = `$${mockup.price}`;
+
+      // Render color options
+      const colorOptions = document.getElementById('color-options');
+      if (product.colors?.length > 0) {
+        colorOptions.innerHTML = product.colors.map(color => `
+          <div class="color-swatch color-${color} ${color === currentState.selectedColor ? 'selected' : ''}"
+               onclick="changeColor('${color}')" title="${color}"></div>
+        `).join('');
+      } else {
+        colorOptions.innerHTML = '';
+      }
+
+      // Render size options
+      const sizeOptions = document.getElementById('size-options');
+      sizeOptions.innerHTML = product.sizes.map(size => `
+        <button class="option-btn ${size === currentState.selectedSize ? 'selected' : ''}"
+                onclick="changeSize('${size}')">${size}</button>
+      `).join('');
+    }
+
+    function changeColor(color) {
+      currentState.selectedColor = color;
+      if (window.openai?.callTool) {
+        window.openai.callTool('show_mockup', {
+          designId: currentState.designId || 'default',
+          productId: currentState.selectedProduct.id,
+          color: color,
+          size: currentState.selectedSize
+        });
+      }
+    }
+
+    function changeSize(size) {
+      currentState.selectedSize = size;
+      if (window.openai?.callTool) {
+        window.openai.callTool('show_mockup', {
+          designId: currentState.designId || 'default',
+          productId: currentState.selectedProduct.id,
+          color: currentState.selectedColor,
+          size: size
+        });
+      }
+    }
+
+    function handleBuyClick() {
+      if (window.openai?.callTool) {
+        window.openai.callTool('checkout', {
+          designId: currentState.designId || 'default',
+          productId: currentState.selectedProduct.id,
+          color: currentState.selectedColor,
+          size: currentState.selectedSize,
+          quantity: 1
+        });
+      }
+    }
+
+    function renderCheckout(checkout) {
+      const itemsContainer = document.getElementById('checkout-items');
+      itemsContainer.innerHTML = checkout.items.map(item => {
+        const imageKey = item.color ? `${item.productId}-${item.color}` : item.productId;
+        const imageUrl = productImages[imageKey] || '/images/tshirt-white.svg';
+
+        return `
+          <div class="checkout-item">
+            <img class="checkout-item-image" src="${imageUrl}" alt="${item.productName}">
+            <div class="checkout-item-details">
+              <div style="font-weight: 600;">${item.productName}</div>
+              <div style="color: #888; font-size: 13px;">${item.color ? item.color + ' / ' : ''}${item.size}</div>
+              <div style="color: #10b981;">$${item.unitPrice} x ${item.quantity}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('checkout-subtotal').textContent = `$${checkout.subtotal.toFixed(2)}`;
+      document.getElementById('checkout-shipping').textContent = `$${checkout.shipping.toFixed(2)}`;
+      document.getElementById('checkout-total').textContent = `$${checkout.total.toFixed(2)}`;
+    }
+
+    function handleCompleteCheckout() {
+      // This would integrate with Agentic Commerce Protocol
+      // For now, send a follow-up message
+      if (window.openai?.sendFollowUpMessage) {
+        window.openai.sendFollowUpMessage('I want to complete my purchase!');
+      }
+    }
+
+    // Start
+    init();
+  </script>
+</body>
+</html>
