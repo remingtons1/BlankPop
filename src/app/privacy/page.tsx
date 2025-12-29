@@ -101,7 +101,7 @@ export default function Privacy() {
                 If you have any questions about this privacy policy or our data practices, please contact us at:
               </p>
               <p className="text-zinc-300 mt-4">
-                <strong>Email:</strong> privacy@blankpop.online
+                <strong>Email:</strong> support@formpop.online
               </p>
             </section>
           </div>

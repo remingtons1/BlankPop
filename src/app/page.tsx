@@ -201,7 +201,7 @@ export default function Home() {
           <div className="flex gap-6 text-sm text-zinc-400">
             <a href="/privacy" className="hover:text-white transition">Privacy</a>
             <a href="/terms" className="hover:text-white transition">Terms</a>
-            <a href="mailto:support@blankpop.online" className="hover:text-white transition">Contact</a>
+            <a href="mailto:support@formpop.online" className="hover:text-white transition">Contact</a>
           </div>
         </div>
       </footer>

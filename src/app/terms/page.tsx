@@ -129,7 +129,7 @@ export default function Terms() {
                 If you have any questions about these Terms of Service, please contact us at:
               </p>
               <p className="text-zinc-300 mt-4">
-                <strong>Email:</strong> support@blankpop.online
+                <strong>Email:</strong> support@formpop.online
               </p>
             </section>
           </div>
