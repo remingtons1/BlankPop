@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#1a1a1a"/>
+  <!-- Hoodie body -->
+  <path d="M90 100 L140 100 L160 80 L240 80 L260 100 L310 100 L330 150 L300 170 L300 320 L100 320 L100 170 L70 150 Z" fill="#6b7280" stroke="#7b8290" stroke-width="2"/>
+  <!-- Hood -->
+  <path d="M140 100 L160 80 L240 80 L260 100 L250 60 L200 40 L150 60 Z" fill="#7b8290" stroke="#8b929f" stroke-width="2"/>
+  <!-- Pocket -->
+  <path d="M130 250 L130 290 L270 290 L270 250 Q200 270 130 250" fill="#5b6270" stroke="#6b7280" stroke-width="1"/>
+  <!-- Design area -->
+  <rect x="145" y="130" width="110" height="100" rx="8" fill="#10b981" fill-opacity="0.2" stroke="#10b981" stroke-width="2" stroke-dasharray="8,4"/>
+  <text x="200" y="175" text-anchor="middle" fill="#10b981" font-family="system-ui" font-size="12" font-weight="600">YOUR</text>
+  <text x="200" y="195" text-anchor="middle" fill="#10b981" font-family="system-ui" font-size="12" font-weight="600">DESIGN</text>
+  <text x="200" y="215" text-anchor="middle" fill="#10b981" font-family="system-ui" font-size="12" font-weight="600">HERE</text>
+  <!-- Label -->
+  <text x="200" y="360" text-anchor="middle" fill="#666" font-family="system-ui" font-size="14">Gray Hoodie</text>
+</svg>
