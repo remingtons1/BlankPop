@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
 import http from "http";
@@ -133,7 +134,7 @@ server.resource(
 );
 
 // Tool: Show available products
-server.tool(
+server.registerTool(
   "show_products",
   {
     title: "Show BlankPop Products",
@@ -162,7 +163,7 @@ server.tool(
 );
 
 // Tool: Generate a design with DALL-E 3
-server.tool(
+server.registerTool(
   "generate_design",
   {
     title: "Generate Design",
@@ -177,7 +178,11 @@ server.tool(
       "openai/toolInvocation/invoked": "Design created!",
     },
   },
-  async ({ prompt, style }) => {
+  async (params) => {
+    // Handle wrapped params (ChatGPT may send {inputSchema: {...}})
+    const { prompt, style } = params.inputSchema || params;
+    console.log(`generate_design called with: prompt="${prompt}", style="${style}"`);
+
     try {
       const design = await generateDesignWithDALLE(prompt, style);
 
@@ -232,7 +237,7 @@ server.tool(
 );
 
 // Tool: Show design on product (mockup)
-server.tool(
+server.registerTool(
   "show_mockup",
   {
     title: "Show Design on Product",
@@ -249,7 +254,11 @@ server.tool(
       "openai/toolInvocation/invoked": "Mockup ready!",
     },
   },
-  async ({ designId, productId, color, size }) => {
+  async (params) => {
+    // Handle wrapped params
+    const { designId, productId, color, size } = params.inputSchema || params;
+    console.log(`show_mockup called with: designId="${designId}", productId="${productId}"`);
+
     const product = PRODUCTS.find((p) => p.id === productId);
     if (!product) {
       return {
@@ -299,7 +308,7 @@ server.tool(
 );
 
 // Tool: Add to cart / initiate checkout
-server.tool(
+server.registerTool(
   "checkout",
   {
     title: "Buy Now",
@@ -317,7 +326,11 @@ server.tool(
       "openai/toolInvocation/invoked": "Ready to checkout!",
     },
   },
-  async ({ designId, productId, color, size, quantity }) => {
+  async (params) => {
+    // Handle wrapped params
+    const { designId, productId, color, size, quantity = 1 } = params.inputSchema || params;
+    console.log(`checkout called with: designId="${designId}", productId="${productId}", size="${size}"`);
+
     const product = PRODUCTS.find((p) => p.id === productId);
     if (!product) {
       return {
@@ -367,11 +380,17 @@ server.tool(
 // HTTP server to handle MCP requests and serve static files
 const PORT = process.env.PORT || 3001;
 
+// Store transports for session management
+const transports = new Map();
+
 const httpServer = http.createServer(async (req, res) => {
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+
   // CORS headers
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
 
   if (req.method === "OPTIONS") {
     res.writeHead(200);
@@ -404,17 +423,91 @@ const httpServer = http.createServer(async (req, res) => {
     }
   }
 
-  // MCP endpoint
-  if (req.url === "/mcp" || req.url?.startsWith("/mcp")) {
-    const transport = new StreamableHTTPServerTransport({
-      sessionIdGenerator: () => `session_${Date.now()}`,
-    });
+  // SSE endpoint - establish SSE connection
+  if (url.pathname === "/mcp" && req.method === "GET") {
+    console.log("  -> SSE connection request");
 
-    await transport.handleRequest(req, res, server);
-  } else {
-    res.writeHead(404);
-    res.end("Not found");
+    // Add headers to prevent proxy buffering (cloudflare, nginx, etc)
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("X-Accel-Buffering", "no");
+    res.setHeader("Connection", "keep-alive");
+
+    const transport = new SSEServerTransport("/mcp/messages", res);
+
+    // The transport generates its own session ID - we need to capture it
+    // Access the private _sessionId (it's sent in the endpoint event)
+    const sessionId = transport._sessionId;
+    console.log(`  -> Created session: ${sessionId}`);
+
+    transports.set(sessionId, transport);
+
+    // Clean up on close
+    transport.onclose = () => {
+      console.log(`  -> Session closed: ${sessionId}`);
+      transports.delete(sessionId);
+    };
+
+    transport.onerror = (error) => {
+      console.error(`  -> Session error: ${sessionId}`, error);
+      transports.delete(sessionId);
+    };
+
+    // Connect the transport to the MCP server
+    try {
+      await server.connect(transport);
+    } catch (error) {
+      console.error("  -> Error connecting to MCP server:", error);
+    }
+    // Transport sends its own endpoint event automatically
+    return;
   }
+
+  // Message endpoint - handle MCP messages
+  if (url.pathname === "/mcp/messages" && req.method === "POST") {
+    const sessionId = url.searchParams.get("sessionId");
+    console.log(`  -> Message for session: ${sessionId}`);
+
+    if (!sessionId || !transports.has(sessionId)) {
+      console.log("  -> Session not found");
+      res.writeHead(400);
+      res.end(JSON.stringify({ error: "Invalid or missing session ID" }));
+      return;
+    }
+
+    const transport = transports.get(sessionId);
+    try {
+      await transport.handlePostMessage(req, res);
+    } catch (error) {
+      console.error("  -> Error handling message:", error);
+    }
+    return;
+  }
+
+  // Handle POST /mcp for Streamable HTTP transport (newer format)
+  if (url.pathname === "/mcp" && req.method === "POST") {
+    console.log("  -> POST to /mcp (Streamable HTTP)");
+
+    try {
+      // Create a new transport for each request (stateless)
+      const transport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: () => `session_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+      });
+
+      // Handle the request - pass server for initialization
+      await transport.handleRequest(req, res, server);
+    } catch (error) {
+      console.error("  -> Streamable HTTP error:", error);
+      if (!res.headersSent) {
+        res.writeHead(500);
+        res.end(JSON.stringify({ error: error.message }));
+      }
+    }
+    return;
+  }
+
+  // Fallback 404
+  res.writeHead(404);
+  res.end("Not found");
 });
 
 httpServer.listen(PORT, () => {
@@ -422,7 +515,8 @@ httpServer.listen(PORT, () => {
 ╔══════════════════════════════════════════════════════════════╗
 ║                    BlankPop MCP Server                       ║
 ╠══════════════════════════════════════════════════════════════╣
-║  MCP Endpoint: http://localhost:${PORT}/mcp                     ║
+║  SSE Endpoint: http://localhost:${PORT}/mcp                     ║
+║  Message Endpoint: http://localhost:${PORT}/mcp/messages        ║
 ║  Designs served from: /designs/                              ║
 ╠══════════════════════════════════════════════════════════════╣
 ║  To test with ChatGPT:                                       ║
