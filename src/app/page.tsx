@@ -70,8 +70,8 @@ export default function Home() {
                 <div className="w-8 h-8 rounded-full bg-zinc-600 flex-shrink-0"></div>
                 <div className="flex-1">
                   <p className="text-zinc-300 mb-4">Here&apos;s your design on a premium t-shirt:</p>
-                  <div className="bg-zinc-700 rounded-lg aspect-square max-w-xs flex items-center justify-center text-zinc-500">
-                    [Your design here]
+                  <div className="rounded-lg aspect-square max-w-xs overflow-hidden">
+                    <img src="/images/tshirt-white.svg" alt="T-shirt preview" className="w-full h-full object-cover" />
                   </div>
                   <div className="mt-4 flex gap-3">
                     <button className="px-6 py-2 bg-emerald-400 text-black rounded-full font-medium text-sm">
@@ -137,14 +137,14 @@ export default function Home() {
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { name: "T-Shirts", price: "from $25" },
-              { name: "Hoodies", price: "from $45" },
-              { name: "Mugs", price: "from $18" },
-              { name: "Posters", price: "from $20" },
+              { name: "T-Shirts", price: "from $29", image: "/images/tshirt-white.svg" },
+              { name: "Hoodies", price: "from $49", image: "/images/hoodie-black.svg" },
+              { name: "Mugs", price: "from $18", image: "/images/mug-white.svg" },
+              { name: "Posters", price: "from $20", image: "/images/poster.svg" },
             ].map((product) => (
               <div key={product.name} className="bg-zinc-900 rounded-xl border border-white/10 p-6 text-center hover:border-emerald-400/50 transition">
-                <div className="aspect-square bg-zinc-800 rounded-lg mb-4 flex items-center justify-center text-zinc-600">
-                  [Image]
+                <div className="aspect-square rounded-lg mb-4 overflow-hidden">
+                  <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                 </div>
                 <h3 className="font-semibold mb-1">{product.name}</h3>
                 <p className="text-sm text-zinc-400">{product.price}</p>
@@ -199,9 +199,9 @@ export default function Home() {
             &copy; {new Date().getFullYear()} BlankPop. All rights reserved.
           </p>
           <div className="flex gap-6 text-sm text-zinc-400">
-            <a href="#" className="hover:text-white transition">Privacy</a>
-            <a href="#" className="hover:text-white transition">Terms</a>
-            <a href="#" className="hover:text-white transition">Contact</a>
+            <a href="/privacy" className="hover:text-white transition">Privacy</a>
+            <a href="/terms" className="hover:text-white transition">Terms</a>
+            <a href="mailto:support@blankpop.online" className="hover:text-white transition">Contact</a>
           </div>
         </div>
       </footer>
