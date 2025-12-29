@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm-9_x"]
+
+[phases.install]
+cmds = ["npm install @modelcontextprotocol/sdk openai dotenv zod"]
+
+[phases.build]
+cmds = []
+
+[start]
+cmd = "node mcp-server.js"
