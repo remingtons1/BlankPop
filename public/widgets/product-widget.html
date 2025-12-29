@@ -37,6 +37,33 @@
     .logo span:first-child { color: #fff; }
     .logo span:last-child { color: #10b981; }
 
+    /* Design Preview */
+    .design-preview {
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .design-preview h3 {
+      margin-bottom: 12px;
+      color: #10b981;
+    }
+
+    .design-image {
+      max-width: 200px;
+      max-height: 200px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .design-prompt {
+      font-size: 13px;
+      color: #888;
+      font-style: italic;
+    }
+
     /* Products Grid */
     .products-grid {
       display: grid;
@@ -63,13 +90,31 @@
       background: #10b98110;
     }
 
-    .product-image {
+    .product-image-container {
+      position: relative;
       width: 100%;
       aspect-ratio: 1;
+      margin-bottom: 8px;
+    }
+
+    .product-image {
+      width: 100%;
+      height: 100%;
       object-fit: cover;
       border-radius: 8px;
-      margin-bottom: 8px;
       background: #0a0a0a;
+    }
+
+    .product-design-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 40%;
+      height: 40%;
+      object-fit: contain;
+      border-radius: 4px;
+      pointer-events: none;
     }
 
     .product-name {
@@ -90,12 +135,27 @@
       margin-bottom: 16px;
     }
 
-    .mockup-image {
+    .mockup-container {
+      position: relative;
       width: 100%;
       max-width: 300px;
       margin: 0 auto 16px;
-      display: block;
+    }
+
+    .mockup-product-image {
+      width: 100%;
       border-radius: 8px;
+    }
+
+    .mockup-design-overlay {
+      position: absolute;
+      top: 35%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 35%;
+      object-fit: contain;
+      border-radius: 4px;
+      pointer-events: none;
     }
 
     .mockup-details {
@@ -213,11 +273,27 @@
       margin-bottom: 12px;
     }
 
-    .checkout-item-image {
+    .checkout-item-image-container {
+      position: relative;
       width: 60px;
       height: 60px;
+    }
+
+    .checkout-item-image {
+      width: 100%;
+      height: 100%;
       object-fit: cover;
       border-radius: 8px;
+    }
+
+    .checkout-design-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 50%;
+      height: 50%;
+      object-fit: contain;
     }
 
     .checkout-item-details {
@@ -251,15 +327,28 @@
       <div class="logo"><span>Blank</span><span>Pop</span></div>
     </div>
 
+    <!-- Design Preview (shown when design is generated) -->
+    <div id="design-preview" class="design-preview hidden">
+      <h3>Your Design</h3>
+      <img id="design-image" class="design-image" src="" alt="Your design">
+      <p id="design-prompt" class="design-prompt"></p>
+    </div>
+
     <!-- Products Grid View -->
     <div id="products-view" class="hidden">
+      <p style="text-align: center; color: #888; margin-bottom: 12px;" id="products-instruction">
+        Select a product to see your design
+      </p>
       <div class="products-grid" id="products-grid"></div>
     </div>
 
     <!-- Mockup View -->
     <div id="mockup-view" class="hidden">
       <div class="mockup-section">
-        <img id="mockup-image" class="mockup-image" src="" alt="Product mockup">
+        <div class="mockup-container">
+          <img id="mockup-product-image" class="mockup-product-image" src="" alt="Product">
+          <img id="mockup-design-overlay" class="mockup-design-overlay hidden" src="" alt="Design">
+        </div>
         <div class="mockup-details">
           <div id="mockup-title" class="mockup-title"></div>
           <div id="mockup-price" class="mockup-price"></div>
@@ -308,19 +397,22 @@
       selectedColor: null,
       selectedSize: null,
       designId: null,
+      designImageUrl: null,
+      designPrompt: null,
       checkout: null
     };
 
-    // Product images mapping
+    // Product images mapping (using blankpop.online)
+    const BASE_URL = 'https://blankpop.online';
     const productImages = {
-      'tshirt-white': '/images/tshirt-white.svg',
-      'tshirt-black': '/images/tshirt-black.svg',
-      'tshirt-navy': '/images/tshirt-navy.svg',
-      'hoodie-white': '/images/hoodie-white.svg',
-      'hoodie-black': '/images/hoodie-black.svg',
-      'hoodie-gray': '/images/hoodie-gray.svg',
-      'mug-white': '/images/mug-white.svg',
-      'poster': '/images/poster.svg'
+      'tshirt-white': `${BASE_URL}/images/tshirt-white.svg`,
+      'tshirt-black': `${BASE_URL}/images/tshirt-black.svg`,
+      'tshirt-navy': `${BASE_URL}/images/tshirt-navy.svg`,
+      'hoodie-white': `${BASE_URL}/images/hoodie-white.svg`,
+      'hoodie-black': `${BASE_URL}/images/hoodie-black.svg`,
+      'hoodie-gray': `${BASE_URL}/images/hoodie-gray.svg`,
+      'mug-white': `${BASE_URL}/images/mug-white.svg`,
+      'poster': `${BASE_URL}/images/poster.svg`
     };
 
     // Initialize
@@ -335,7 +427,10 @@
 
       // Button handlers
       document.getElementById('buy-btn')?.addEventListener('click', handleBuyClick);
-      document.getElementById('back-btn')?.addEventListener('click', () => showView('products'));
+      document.getElementById('back-btn')?.addEventListener('click', () => {
+        showView('products');
+        updateDesignPreview();
+      });
       document.getElementById('complete-checkout-btn')?.addEventListener('click', handleCompleteCheckout);
     }
 
@@ -355,6 +450,9 @@
         case 'show_design':
           currentState.products = data.products || currentState.products;
           currentState.designId = data.design?.id;
+          currentState.designImageUrl = data.design?.imageUrl;
+          currentState.designPrompt = data.design?.prompt;
+          updateDesignPreview();
           renderProducts();
           showView('products');
           break;
@@ -363,6 +461,10 @@
           currentState.selectedProduct = currentState.products.find(p => p.id === data.mockup.productId);
           currentState.selectedColor = data.mockup.color;
           currentState.selectedSize = data.mockup.size;
+          // Update design URL if provided
+          if (data.mockup.designImageUrl) {
+            currentState.designImageUrl = data.mockup.designImageUrl;
+          }
           renderMockup(data.mockup);
           showView('mockup');
           break;
@@ -382,15 +484,37 @@
       document.getElementById('checkout-view').classList.toggle('hidden', view !== 'checkout');
     }
 
+    function updateDesignPreview() {
+      const preview = document.getElementById('design-preview');
+      const designImage = document.getElementById('design-image');
+      const designPrompt = document.getElementById('design-prompt');
+      const instruction = document.getElementById('products-instruction');
+
+      if (currentState.designImageUrl && currentState.designImageUrl.includes('/designs/')) {
+        preview.classList.remove('hidden');
+        designImage.src = currentState.designImageUrl;
+        designPrompt.textContent = currentState.designPrompt ? `"${currentState.designPrompt}"` : '';
+        instruction.textContent = 'Select a product to see your design on it';
+      } else {
+        preview.classList.add('hidden');
+        instruction.textContent = 'Select a product to customize';
+      }
+    }
+
     function renderProducts() {
       const grid = document.getElementById('products-grid');
+      const hasDesign = currentState.designImageUrl && currentState.designImageUrl.includes('/designs/');
+
       grid.innerHTML = currentState.products.map(product => {
         const imageKey = product.colors?.[0] ? `${product.id}-${product.colors[0]}` : product.id;
-        const imageUrl = productImages[imageKey] || productImages[product.id] || '/images/tshirt-white.svg';
+        const imageUrl = productImages[imageKey] || productImages[product.id] || productImages['tshirt-white'];
 
         return `
           <div class="product-card" onclick="selectProduct('${product.id}')">
-            <img class="product-image" src="${imageUrl}" alt="${product.name}">
+            <div class="product-image-container">
+              <img class="product-image" src="${imageUrl}" alt="${product.name}">
+              ${hasDesign ? `<img class="product-design-overlay" src="${currentState.designImageUrl}" alt="Design preview">` : ''}
+            </div>
             <div class="product-name">${product.name}</div>
             <div class="product-price">from $${product.basePrice}</div>
           </div>
@@ -418,9 +542,20 @@
       if (!product) return;
 
       const imageKey = mockup.color ? `${mockup.productId}-${mockup.color}` : mockup.productId;
-      const imageUrl = productImages[imageKey] || productImages[mockup.productId] || mockup.imageUrl;
+      const productImageUrl = productImages[imageKey] || productImages[mockup.productId] || mockup.productImageUrl;
 
-      document.getElementById('mockup-image').src = imageUrl;
+      // Set product image
+      document.getElementById('mockup-product-image').src = productImageUrl;
+
+      // Set design overlay if available
+      const designOverlay = document.getElementById('mockup-design-overlay');
+      if (mockup.designImageUrl || currentState.designImageUrl) {
+        designOverlay.src = mockup.designImageUrl || currentState.designImageUrl;
+        designOverlay.classList.remove('hidden');
+      } else {
+        designOverlay.classList.add('hidden');
+      }
+
       document.getElementById('mockup-title').textContent = `${mockup.color ? mockup.color.charAt(0).toUpperCase() + mockup.color.slice(1) + ' ' : ''}${mockup.product}`;
       document.getElementById('mockup-price').textContent = `$${mockup.price}`;
 
@@ -483,11 +618,15 @@
       const itemsContainer = document.getElementById('checkout-items');
       itemsContainer.innerHTML = checkout.items.map(item => {
         const imageKey = item.color ? `${item.productId}-${item.color}` : item.productId;
-        const imageUrl = productImages[imageKey] || '/images/tshirt-white.svg';
+        const productImageUrl = productImages[imageKey] || productImages['tshirt-white'];
+        const designUrl = item.designImageUrl || currentState.designImageUrl;
 
         return `
           <div class="checkout-item">
-            <img class="checkout-item-image" src="${imageUrl}" alt="${item.productName}">
+            <div class="checkout-item-image-container">
+              <img class="checkout-item-image" src="${productImageUrl}" alt="${item.productName}">
+              ${designUrl ? `<img class="checkout-design-overlay" src="${designUrl}" alt="Design">` : ''}
+            </div>
             <div class="checkout-item-details">
               <div style="font-weight: 600;">${item.productName}</div>
               <div style="color: #888; font-size: 13px;">${item.color ? item.color + ' / ' : ''}${item.size}</div>
