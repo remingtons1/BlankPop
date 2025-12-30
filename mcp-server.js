@@ -62,10 +62,15 @@ async function generateDesignWithDALLE(prompt, style) {
   const designId = `design_${Date.now()}`;
 
   // Enhance prompt for merchandise design
-  const enhancedPrompt = `Create a design suitable for printing on merchandise (t-shirt, hoodie, mug, poster).
-The design should have a transparent or solid background, be visually striking, and work well when printed.
-Design request: ${prompt}${style ? `, in ${style} style` : ""}.
-Make it bold, eye-catching, and suitable for apparel/merchandise printing. No text unless specifically requested.`;
+  const enhancedPrompt = `Create a SINGLE design artwork suitable for printing on a t-shirt or merchandise.
+Requirements:
+- ONE design only, centered in the image
+- Clean solid background (white, black, or transparent-friendly)
+- Bold, high-contrast artwork that prints well
+- No mockups, no product images, no phone screens, no multiple variations
+- Just the artwork itself, isolated and centered
+
+Design request: ${prompt}${style ? `, in ${style} style` : ""}.`;
 
   try {
     console.log(`Generating design with DALL-E 3: "${prompt}"`);

@@ -107,14 +107,15 @@
 
     .product-design-overlay {
       position: absolute;
-      top: 50%;
+      top: 45%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 40%;
-      height: 40%;
+      width: 30%;
+      max-width: 60px;
       object-fit: contain;
       border-radius: 4px;
       pointer-events: none;
+      opacity: 0.9;
     }
 
     .product-name {
@@ -149,13 +150,15 @@
 
     .mockup-design-overlay {
       position: absolute;
-      top: 35%;
+      top: 40%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 35%;
+      width: 40%;
+      max-width: 120px;
       object-fit: contain;
       border-radius: 4px;
       pointer-events: none;
+      opacity: 0.95;
     }
 
     .mockup-details {
@@ -527,18 +530,39 @@
       }).join('');
     }
 
-    function selectProduct(productId) {
+    // Make selectProduct globally accessible
+    window.selectProduct = function(productId) {
+      console.log('selectProduct called:', productId);
       const product = currentState.products.find(p => p.id === productId);
-      if (!product) return;
+      if (!product) {
+        console.error('Product not found:', productId);
+        return;
+      }
+
+      currentState.selectedProduct = product;
 
       // Call the show_mockup tool
       if (window.openai?.callTool) {
+        console.log('Calling show_mockup tool');
         window.openai.callTool('show_mockup', {
           designId: currentState.designId || 'default',
           productId: productId,
           color: product.colors?.[0] || '',
           size: product.sizes?.[0] || ''
         });
+      } else {
+        console.log('openai.callTool not available, showing mockup directly');
+        // Fallback: show mockup view directly
+        renderMockup({
+          designId: currentState.designId,
+          productId: productId,
+          product: product.name,
+          color: product.colors?.[0] || '',
+          size: product.sizes?.[0] || '',
+          price: product.basePrice,
+          designImageUrl: currentState.designImageUrl
+        });
+        showView('mockup');
       }
     }
 
@@ -585,26 +609,44 @@
       `).join('');
     }
 
-    function changeColor(color) {
+    window.changeColor = function(color) {
       currentState.selectedColor = color;
-      if (window.openai?.callTool) {
+      const product = currentState.selectedProduct;
+      if (window.openai?.callTool && product) {
         window.openai.callTool('show_mockup', {
           designId: currentState.designId || 'default',
-          productId: currentState.selectedProduct.id,
+          productId: product.id,
           color: color,
           size: currentState.selectedSize
+        });
+      } else if (product) {
+        // Fallback: update mockup directly
+        renderMockup({
+          designId: currentState.designId,
+          productId: product.id,
+          product: product.name,
+          color: color,
+          size: currentState.selectedSize,
+          price: product.basePrice,
+          designImageUrl: currentState.designImageUrl
         });
       }
     }
 
-    function changeSize(size) {
+    window.changeSize = function(size) {
       currentState.selectedSize = size;
-      if (window.openai?.callTool) {
+      const product = currentState.selectedProduct;
+      if (window.openai?.callTool && product) {
         window.openai.callTool('show_mockup', {
           designId: currentState.designId || 'default',
-          productId: currentState.selectedProduct.id,
+          productId: product.id,
           color: currentState.selectedColor,
           size: size
+        });
+      } else if (product) {
+        // Fallback: update size display
+        document.querySelectorAll('.option-btn').forEach(btn => {
+          btn.classList.toggle('selected', btn.textContent === size);
         });
       }
     }
