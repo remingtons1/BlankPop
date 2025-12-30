@@ -511,23 +511,30 @@
 
     function renderProducts() {
       const grid = document.getElementById('products-grid');
-      const hasDesign = currentState.designImageUrl && currentState.designImageUrl.includes('/designs/');
 
       grid.innerHTML = currentState.products.map(product => {
         const imageKey = product.colors?.[0] ? `${product.id}-${product.colors[0]}` : product.id;
         const imageUrl = productImages[imageKey] || productImages[product.id] || productImages['tshirt-white'];
 
         return `
-          <div class="product-card" onclick="selectProduct('${product.id}')">
+          <div class="product-card" data-product-id="${product.id}">
             <div class="product-image-container">
               <img class="product-image" src="${imageUrl}" alt="${product.name}">
-              ${hasDesign ? `<img class="product-design-overlay" src="${currentState.designImageUrl}" alt="Design preview">` : ''}
             </div>
             <div class="product-name">${product.name}</div>
             <div class="product-price">from $${product.basePrice}</div>
           </div>
         `;
       }).join('');
+
+      // Add click handlers via event delegation
+      grid.querySelectorAll('.product-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const productId = card.dataset.productId;
+          console.log('Product card clicked:', productId);
+          window.selectProduct(productId);
+        });
+      });
     }
 
     // Make selectProduct globally accessible
