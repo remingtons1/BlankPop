@@ -531,6 +531,43 @@ const httpServer = http.createServer(async (req, res) => {
     return;
   }
 
+  // Serve static files from Next.js build (out directory)
+  const staticDir = path.join(__dirname, "out");
+  let filePath = path.join(staticDir, url.pathname);
+
+  // Handle directory requests (serve index.html)
+  if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+    filePath = path.join(filePath, "index.html");
+  }
+
+  // Try with .html extension if file doesn't exist
+  if (!fs.existsSync(filePath) && !path.extname(filePath)) {
+    filePath = filePath + ".html";
+  }
+
+  if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+    const ext = path.extname(filePath).toLowerCase();
+    const mimeTypes = {
+      ".html": "text/html",
+      ".css": "text/css",
+      ".js": "application/javascript",
+      ".json": "application/json",
+      ".png": "image/png",
+      ".jpg": "image/jpeg",
+      ".jpeg": "image/jpeg",
+      ".svg": "image/svg+xml",
+      ".ico": "image/x-icon",
+      ".woff": "font/woff",
+      ".woff2": "font/woff2",
+      ".ttf": "font/ttf",
+    };
+
+    res.setHeader("Content-Type", mimeTypes[ext] || "application/octet-stream");
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    fs.createReadStream(filePath).pipe(res);
+    return;
+  }
+
   // Fallback 404
   res.writeHead(404);
   res.end("Not found");
