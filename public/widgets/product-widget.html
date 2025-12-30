@@ -381,6 +381,11 @@
             <span id="checkout-total">$0.00</span>
           </div>
         </div>
+        <a id="checkout-link" href="#" target="_blank" style="display: none; margin-top: 16px; text-align: center;">
+          <button class="btn-primary" style="width: 100%; pointer-events: none;">
+            Complete Purchase
+          </button>
+        </a>
         <button id="complete-checkout-btn" class="btn-primary" style="margin-top: 16px;">
           Complete Purchase
         </button>
@@ -641,17 +646,31 @@
       document.getElementById('checkout-subtotal').textContent = `$${checkout.subtotal.toFixed(2)}`;
       document.getElementById('checkout-shipping').textContent = `$${checkout.shipping.toFixed(2)}`;
       document.getElementById('checkout-total').textContent = `$${checkout.total.toFixed(2)}`;
+
+      // Show link button if Stripe URL available, otherwise show regular button
+      const checkoutLink = document.getElementById('checkout-link');
+      const checkoutBtn = document.getElementById('complete-checkout-btn');
+
+      if (checkout.checkoutUrl) {
+        checkoutLink.href = checkout.checkoutUrl;
+        checkoutLink.style.display = 'block';
+        checkoutBtn.style.display = 'none';
+      } else {
+        checkoutLink.style.display = 'none';
+        checkoutBtn.style.display = 'block';
+      }
     }
 
     function handleCompleteCheckout() {
       const btn = document.getElementById('complete-checkout-btn');
       const checkout = currentState.checkout;
 
+      console.log('Checkout data:', checkout);
+
       // Redirect to Stripe Checkout if URL is available
       if (checkout?.checkoutUrl) {
-        btn.textContent = 'Redirecting to payment...';
-        btn.disabled = true;
-        window.open(checkout.checkoutUrl, '_blank');
+        // Use location.href for better compatibility in iframes
+        window.location.href = checkout.checkoutUrl;
         return;
       }
 
@@ -663,9 +682,10 @@
         return;
       }
 
-      // Fallback: Show message
-      btn.textContent = 'Payment not configured';
+      // Fallback: Show message - checkoutUrl not available
+      btn.textContent = 'No checkout URL';
       btn.disabled = true;
+      console.error('No checkoutUrl in checkout data:', checkout);
     }
 
     // Start
