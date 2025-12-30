@@ -423,6 +423,32 @@ const httpServer = http.createServer(async (req, res) => {
     }
   }
 
+  // Serve static files from /images/
+  if (req.url?.startsWith("/images/")) {
+    const filename = req.url.replace("/images/", "");
+    const filepath = path.join(__dirname, "public/images", filename);
+
+    if (fs.existsSync(filepath)) {
+      const ext = path.extname(filename).toLowerCase();
+      const mimeTypes = {
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".webp": "image/webp",
+        ".svg": "image/svg+xml",
+      };
+
+      res.setHeader("Content-Type", mimeTypes[ext] || "application/octet-stream");
+      res.setHeader("Cache-Control", "public, max-age=86400");
+      fs.createReadStream(filepath).pipe(res);
+      return;
+    } else {
+      res.writeHead(404);
+      res.end("Image not found");
+      return;
+    }
+  }
+
   // SSE endpoint - establish SSE connection
   if (url.pathname === "/mcp" && req.method === "GET") {
     console.log("  -> SSE connection request");
