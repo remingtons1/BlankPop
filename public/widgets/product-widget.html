@@ -539,8 +539,8 @@
 
     function renderMockup(mockup) {
       const product = currentState.selectedProduct;
-      if (!product) return;
 
+      // Build image URL even without product loaded
       const imageKey = mockup.color ? `${mockup.productId}-${mockup.color}` : mockup.productId;
       const productImageUrl = productImages[imageKey] || productImages[mockup.productId] || mockup.productImageUrl;
 
@@ -561,8 +561,9 @@
 
       // Render color options
       const colorOptions = document.getElementById('color-options');
-      if (product.colors?.length > 0) {
-        colorOptions.innerHTML = product.colors.map(color => `
+      const availableColors = product?.colors || [];
+      if (availableColors.length > 0) {
+        colorOptions.innerHTML = availableColors.map(color => `
           <div class="color-swatch color-${color} ${color === currentState.selectedColor ? 'selected' : ''}"
                onclick="changeColor('${color}')" title="${color}"></div>
         `).join('');
@@ -572,7 +573,8 @@
 
       // Render size options
       const sizeOptions = document.getElementById('size-options');
-      sizeOptions.innerHTML = product.sizes.map(size => `
+      const availableSizes = product?.sizes || [mockup.size].filter(Boolean);
+      sizeOptions.innerHTML = availableSizes.map(size => `
         <button class="option-btn ${size === currentState.selectedSize ? 'selected' : ''}"
                 onclick="changeSize('${size}')">${size}</button>
       `).join('');
