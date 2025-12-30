@@ -647,6 +647,14 @@
       const btn = document.getElementById('complete-checkout-btn');
       const checkout = currentState.checkout;
 
+      // Redirect to Stripe Checkout if URL is available
+      if (checkout?.checkoutUrl) {
+        btn.textContent = 'Redirecting to payment...';
+        btn.disabled = true;
+        window.open(checkout.checkoutUrl, '_blank');
+        return;
+      }
+
       // Try ChatGPT's native payment if available
       if (window.openai?.sendFollowUpMessage) {
         window.openai.sendFollowUpMessage('I want to complete my purchase!');
@@ -655,17 +663,9 @@
         return;
       }
 
-      // Fallback: Show confirmation (Stripe integration would go here)
-      btn.textContent = 'Order Submitted!';
+      // Fallback: Show message
+      btn.textContent = 'Payment not configured';
       btn.disabled = true;
-      btn.style.backgroundColor = '#22c55e';
-
-      // Show success message
-      const summary = document.querySelector('.checkout-summary');
-      const successMsg = document.createElement('div');
-      successMsg.style.cssText = 'margin-top: 16px; padding: 12px; background: #22c55e33; border-radius: 8px; text-align: center;';
-      successMsg.innerHTML = `<strong>Demo Mode</strong><br>Payment integration coming soon!<br>Order ID: ${checkout?.sessionId || 'demo-' + Date.now()}`;
-      summary.appendChild(successMsg);
     }
 
     // Start

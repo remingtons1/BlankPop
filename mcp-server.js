@@ -9,6 +9,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import OpenAI from "openai";
+import Stripe from "stripe";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -16,6 +17,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+// Initialize Stripe client
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY)
+  : null;
 
 // In-memory store for generated designs
 const designStore = new Map();
@@ -342,19 +348,71 @@ server.registerTool(
     const design = designStore.get(designId);
     const baseUrl = process.env.BASE_URL || "http://localhost:3001";
     const total = product.basePrice * quantity;
-    const checkoutSessionId = `cs_${Date.now()}`;
+    const selectedColor = color || product.colors[0] || "";
+
+    // Create Stripe Checkout Session
+    let checkoutUrl = null;
+    let checkoutSessionId = `cs_${Date.now()}`;
+
+    if (stripe) {
+      try {
+        const session = await stripe.checkout.sessions.create({
+          payment_method_types: ["card"],
+          line_items: [
+            {
+              price_data: {
+                currency: "usd",
+                product_data: {
+                  name: `${product.name} - ${selectedColor} (${size})`,
+                  description: design ? `Custom design: ${design.prompt}` : "BlankPop custom merchandise",
+                  images: design ? [`${baseUrl}${design.localPath}`] : [],
+                },
+                unit_amount: Math.round(product.basePrice * 100), // Stripe uses cents
+              },
+              quantity: quantity,
+            },
+            {
+              price_data: {
+                currency: "usd",
+                product_data: {
+                  name: "Shipping",
+                },
+                unit_amount: 599, // $5.99 in cents
+              },
+              quantity: 1,
+            },
+          ],
+          mode: "payment",
+          success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${baseUrl}/checkout/cancel`,
+          metadata: {
+            designId: designId,
+            productId: productId,
+            color: selectedColor,
+            size: size,
+          },
+        });
+
+        checkoutUrl = session.url;
+        checkoutSessionId = session.id;
+        console.log(`Stripe session created: ${session.id}`);
+      } catch (error) {
+        console.error("Stripe error:", error.message);
+      }
+    }
 
     return {
       structuredContent: {
         action: "checkout",
         checkout: {
           sessionId: checkoutSessionId,
+          checkoutUrl: checkoutUrl,
           items: [
             {
               designId,
               productId,
               productName: product.name,
-              color: color || product.colors[0] || "",
+              color: selectedColor,
               size,
               quantity,
               unitPrice: product.basePrice,
@@ -370,7 +428,9 @@ server.registerTool(
       content: [
         {
           type: "text",
-          text: `Ready to checkout! ${quantity}x ${product.name} (${size}) = $${total}. Shipping: $5.99. Total: $${(total + 5.99).toFixed(2)}`,
+          text: checkoutUrl
+            ? `Ready to checkout! ${quantity}x ${product.name} (${size}) = $${total}. Shipping: $5.99. Total: $${(total + 5.99).toFixed(2)}. Click "Complete Purchase" to pay securely with Stripe.`
+            : `Ready to checkout! ${quantity}x ${product.name} (${size}) = $${total}. Shipping: $5.99. Total: $${(total + 5.99).toFixed(2)}`,
         },
       ],
     };
