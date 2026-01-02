@@ -75,9 +75,9 @@ async function generateDesignWithDALLE(prompt, style) {
 
   const stylePrompt = style ? (styleMap[style.toLowerCase()] || `${style} style`) : 'clean vector illustration';
 
-  const enhancedPrompt = `${prompt}, ${stylePrompt}, bold merch design, centered composition, strong contrast, limited color palette, sharp edges, crisp silhouette, print ready, high resolution.
+  const enhancedPrompt = `${prompt}, ${stylePrompt}, centered composition, strong contrast, limited color palette, sharp clean edges, crisp silhouette, print ready.
 
-No background, no mockup, no fabric texture, no shadows, no lighting effects, no frame, no border, no scene.`;
+CRITICAL: ONLY the main subject/character on a pure white background. NO decorative elements, NO doodles, NO icons, NO patterns around it, NO background details, NO frame, NO border. Just the single isolated design element, nothing else.`;
 
   try {
     console.log(`Generating design with DALL-E 3: "${prompt}"`);
