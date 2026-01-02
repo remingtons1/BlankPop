@@ -485,7 +485,7 @@ const httpServer = http.createServer(async (req, res) => {
       };
 
       res.setHeader("Content-Type", mimeTypes[ext] || "application/octet-stream");
-      res.setHeader("Cache-Control", "public, max-age=86400");
+      res.setHeader("Cache-Control", "public, max-age=300");
       fs.createReadStream(filepath).pipe(res);
       return;
     } else {
@@ -511,7 +511,7 @@ const httpServer = http.createServer(async (req, res) => {
       };
 
       res.setHeader("Content-Type", mimeTypes[ext] || "application/octet-stream");
-      res.setHeader("Cache-Control", "public, max-age=86400");
+      res.setHeader("Cache-Control", "public, max-age=300");
       fs.createReadStream(filepath).pipe(res);
       return;
     } else {

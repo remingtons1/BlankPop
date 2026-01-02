@@ -410,15 +410,16 @@
 
     // Product images mapping (using blankpop.online)
     const BASE_URL = 'https://blankpop.online';
+    const IMG_VERSION = 'v2'; // Cache buster - increment when SVGs change
     const productImages = {
-      'tshirt-white': `${BASE_URL}/images/tshirt-white.svg`,
-      'tshirt-black': `${BASE_URL}/images/tshirt-black.svg`,
-      'tshirt-navy': `${BASE_URL}/images/tshirt-navy.svg`,
-      'hoodie-white': `${BASE_URL}/images/hoodie-white.svg`,
-      'hoodie-black': `${BASE_URL}/images/hoodie-black.svg`,
-      'hoodie-gray': `${BASE_URL}/images/hoodie-gray.svg`,
-      'mug-white': `${BASE_URL}/images/mug-white.svg`,
-      'poster': `${BASE_URL}/images/poster.svg`
+      'tshirt-white': `${BASE_URL}/images/tshirt-white.svg?${IMG_VERSION}`,
+      'tshirt-black': `${BASE_URL}/images/tshirt-black.svg?${IMG_VERSION}`,
+      'tshirt-navy': `${BASE_URL}/images/tshirt-navy.svg?${IMG_VERSION}`,
+      'hoodie-white': `${BASE_URL}/images/hoodie-white.svg?${IMG_VERSION}`,
+      'hoodie-black': `${BASE_URL}/images/hoodie-black.svg?${IMG_VERSION}`,
+      'hoodie-gray': `${BASE_URL}/images/hoodie-gray.svg?${IMG_VERSION}`,
+      'mug-white': `${BASE_URL}/images/mug-white.svg?${IMG_VERSION}`,
+      'poster': `${BASE_URL}/images/poster.svg?${IMG_VERSION}`
     };
 
     // Initialize
