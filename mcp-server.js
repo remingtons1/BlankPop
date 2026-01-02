@@ -61,6 +61,16 @@ async function downloadImage(url, filepath) {
 async function generateDesignWithDALLE(prompt, style) {
   const designId = `design_${Date.now()}`;
 
+  // Clean prompt: remove product-related words that cause DALL-E to render mockups
+  const cleanedPrompt = prompt
+    .replace(/\b(t-?shirt|shirt|mug|cup|hoodie|sweatshirt|hat|cap|tote|bag|poster|print|merch|merchandise|product|apparel)\s*(design|graphic|art)?\b/gi, '')
+    .replace(/\bdesign\s+(for|on)\s+(a\s+)?(t-?shirt|shirt|mug|hoodie|hat|product)/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  console.log(`Original prompt: "${prompt}"`);
+  console.log(`Cleaned prompt: "${cleanedPrompt}"`);
+
   // Enhance prompt for merch-ready design using print-design best practices
   const styleMap = {
     'vintage': 'retro vintage style, textured print, distressed ink, warm muted colors',
@@ -75,12 +85,12 @@ async function generateDesignWithDALLE(prompt, style) {
 
   const stylePrompt = style ? (styleMap[style.toLowerCase()] || `${style} style`) : 'clean vector illustration';
 
-  const enhancedPrompt = `${prompt}, ${stylePrompt}, centered composition, strong contrast, limited color palette, sharp clean edges, crisp silhouette, print ready.
+  const enhancedPrompt = `${cleanedPrompt}, ${stylePrompt}, centered composition, strong contrast, limited color palette, sharp clean edges, crisp silhouette, print ready.
 
-CRITICAL: ONLY the main subject/character on a pure white background. NO decorative elements, NO doodles, NO icons, NO patterns around it, NO background details, NO frame, NO border. Just the single isolated design element, nothing else.`;
+CRITICAL: ONLY the main subject/character on a pure white background. NO decorative elements, NO doodles, NO icons, NO patterns around it, NO background details, NO frame, NO border. Just the single isolated design element, nothing else. Do NOT show this on any product or mockup.`;
 
   try {
-    console.log(`Generating design with DALL-E 3: "${prompt}"`);
+    console.log(`Generating design with DALL-E 3 (cleaned): "${cleanedPrompt}"`);
 
     const response = await openai.images.generate({
       model: "dall-e-3",
