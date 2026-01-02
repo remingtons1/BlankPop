@@ -4,11 +4,6 @@
   <path d="M100 80 L150 80 L170 60 L230 60 L250 80 L300 80 L320 120 L280 140 L280 320 L120 320 L120 140 L80 120 Z" fill="#ffffff" stroke="#e0e0e0" stroke-width="2"/>
   <!-- Collar -->
   <ellipse cx="200" cy="70" rx="30" ry="15" fill="#1a1a1a"/>
-  <!-- Design area -->
-  <rect x="145" y="120" width="110" height="110" rx="8" fill="#10b981" fill-opacity="0.2" stroke="#10b981" stroke-width="2" stroke-dasharray="8,4"/>
-  <text x="200" y="170" text-anchor="middle" fill="#10b981" font-family="system-ui" font-size="12" font-weight="600">YOUR</text>
-  <text x="200" y="190" text-anchor="middle" fill="#10b981" font-family="system-ui" font-size="12" font-weight="600">DESIGN</text>
-  <text x="200" y="210" text-anchor="middle" fill="#10b981" font-family="system-ui" font-size="12" font-weight="600">HERE</text>
   <!-- Label -->
   <text x="200" y="360" text-anchor="middle" fill="#666" font-family="system-ui" font-size="14">White T-Shirt</text>
 </svg>
