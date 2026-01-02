@@ -105,7 +105,17 @@
       background: #0a0a0a;
     }
 
-    /* Product overlay removed - design only shown in mockup view */
+    .product-design-overlay {
+      position: absolute;
+      top: 45%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 35%;
+      max-width: 80px;
+      object-fit: contain;
+      pointer-events: none;
+      mix-blend-mode: multiply;
+    }
 
     .product-name {
       font-weight: 600;
@@ -499,6 +509,7 @@
 
     function renderProducts() {
       const grid = document.getElementById('products-grid');
+      const designUrl = currentState.designImageUrl;
 
       grid.innerHTML = currentState.products.map(product => {
         const imageKey = product.colors?.[0] ? `${product.id}-${product.colors[0]}` : product.id;
@@ -508,6 +519,7 @@
           <div class="product-card" data-product-id="${product.id}">
             <div class="product-image-container">
               <img class="product-image" src="${imageUrl}" alt="${product.name}">
+              ${designUrl ? `<img class="product-design-overlay" src="${designUrl}" alt="Design">` : ''}
             </div>
             <div class="product-name">${product.name}</div>
             <div class="product-price">from $${product.basePrice}</div>
