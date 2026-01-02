@@ -61,15 +61,23 @@ async function downloadImage(url, filepath) {
 async function generateDesignWithDALLE(prompt, style) {
   const designId = `design_${Date.now()}`;
 
-  // Enhance prompt for t-shirt/merchandise ready design
-  const enhancedPrompt = `Create: ${prompt}${style ? ` in ${style} style` : ""}
+  // Enhance prompt for merch-ready design using print-design best practices
+  const styleMap = {
+    'vintage': 'retro vintage style, textured print, distressed ink, warm muted colors',
+    'retro': 'retro vintage style, textured print, distressed ink, warm muted colors',
+    'minimal': 'minimalist graphic, flat monochrome vector, thick bold outline',
+    'minimalist': 'minimalist graphic, flat monochrome vector, thick bold outline',
+    'cute': 'kawaii cute style, soft chibi proportions, pastel limited palette, rounded shapes, sticker-style',
+    'kawaii': 'kawaii cute style, soft chibi proportions, pastel limited palette, rounded shapes, sticker-style',
+    'streetwear': 'streetwear graphic, edgy bold vector illustration, high contrast, thick outlines',
+    'bold': 'streetwear graphic, edgy bold vector illustration, high contrast, thick outlines',
+  };
 
-IMPORTANT REQUIREMENTS:
-- Isolated artwork on a pure solid white (#FFFFFF) background
-- NO frame, NO border, NO poster, NO scene, NO gradient background
-- Just the character/design floating on white, like a PNG sticker
-- The design should look great when printed on a t-shirt or mug
-- Clean edges, ready for print`;
+  const stylePrompt = style ? (styleMap[style.toLowerCase()] || `${style} style`) : 'clean vector illustration';
+
+  const enhancedPrompt = `${prompt}, ${stylePrompt}, bold merch design, centered composition, strong contrast, limited color palette, sharp edges, crisp silhouette, print ready, high resolution.
+
+No background, no mockup, no fabric texture, no shadows, no lighting effects, no frame, no border, no scene.`;
 
   try {
     console.log(`Generating design with DALL-E 3: "${prompt}"`);
