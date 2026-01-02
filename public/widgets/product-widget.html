@@ -117,6 +117,25 @@
       mix-blend-mode: multiply;
     }
 
+    /* Product-specific overlay positioning for thumbnails */
+    .product-card[data-product-type="hoodie"] .product-design-overlay {
+      top: 38%;
+      width: 30%;
+      max-width: 70px;
+    }
+
+    .product-card[data-product-type="mug"] .product-design-overlay {
+      left: 42%;
+      top: 48%;
+      width: 28%;
+      max-width: 65px;
+    }
+
+    .product-card[data-product-type="poster"] .product-design-overlay {
+      width: 50%;
+      max-width: 120px;
+    }
+
     .product-name {
       font-weight: 600;
       font-size: 14px;
@@ -157,6 +176,25 @@
       object-fit: contain;
       pointer-events: none;
       mix-blend-mode: multiply;
+    }
+
+    /* Product-specific mockup overlay positioning */
+    .mockup-container[data-product-type="hoodie"] .mockup-design-overlay {
+      top: 35%;
+      width: 40%;
+      max-width: 120px;
+    }
+
+    .mockup-container[data-product-type="mug"] .mockup-design-overlay {
+      left: 42%;
+      top: 45%;
+      width: 35%;
+      max-width: 100px;
+    }
+
+    .mockup-container[data-product-type="poster"] .mockup-design-overlay {
+      width: 60%;
+      max-width: 180px;
     }
 
     .mockup-details {
@@ -410,7 +448,7 @@
 
     // Product images mapping (using blankpop.online)
     const BASE_URL = 'https://blankpop.online';
-    const IMG_VERSION = 'v2'; // Cache buster - increment when SVGs change
+    const IMG_VERSION = 'v3'; // Cache buster - increment when SVGs change
     const productImages = {
       'tshirt-white': `${BASE_URL}/images/tshirt-white.svg?${IMG_VERSION}`,
       'tshirt-black': `${BASE_URL}/images/tshirt-black.svg?${IMG_VERSION}`,
@@ -515,9 +553,10 @@
       grid.innerHTML = currentState.products.map(product => {
         const imageKey = product.colors?.[0] ? `${product.id}-${product.colors[0]}` : product.id;
         const imageUrl = productImages[imageKey] || productImages[product.id] || productImages['tshirt-white'];
+        const productType = product.id.split('-')[0]; // Extract 'tshirt', 'hoodie', 'mug', 'poster'
 
         return `
-          <div class="product-card" data-product-id="${product.id}">
+          <div class="product-card" data-product-id="${product.id}" data-product-type="${productType}">
             <div class="product-image-container">
               <img class="product-image" src="${imageUrl}" alt="${product.name}">
               ${designUrl ? `<img class="product-design-overlay" src="${designUrl}" alt="Design">` : ''}
@@ -576,10 +615,14 @@
 
     function renderMockup(mockup) {
       const product = currentState.selectedProduct;
+      const productType = mockup.productId.split('-')[0]; // Extract 'tshirt', 'hoodie', 'mug', 'poster'
 
       // Build image URL even without product loaded
       const imageKey = mockup.color ? `${mockup.productId}-${mockup.color}` : mockup.productId;
       const productImageUrl = productImages[imageKey] || productImages[mockup.productId] || mockup.productImageUrl;
+
+      // Set product type for CSS positioning
+      document.querySelector('.mockup-container').setAttribute('data-product-type', productType);
 
       // Set product image
       document.getElementById('mockup-product-image').src = productImageUrl;
