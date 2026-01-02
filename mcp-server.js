@@ -472,7 +472,7 @@ const httpServer = http.createServer(async (req, res) => {
 
   // Serve static files from /designs/
   if (req.url?.startsWith("/designs/")) {
-    const filename = req.url.replace("/designs/", "");
+    const filename = req.url.replace("/designs/", "").split("?")[0]; // Strip query params
     const filepath = path.join(designsDir, filename);
 
     if (fs.existsSync(filepath)) {
@@ -497,7 +497,7 @@ const httpServer = http.createServer(async (req, res) => {
 
   // Serve static files from /images/
   if (req.url?.startsWith("/images/")) {
-    const filename = req.url.replace("/images/", "");
+    const filename = req.url.replace("/images/", "").split("?")[0]; // Strip query params
     const filepath = path.join(__dirname, "public/images", filename);
 
     if (fs.existsSync(filepath)) {
