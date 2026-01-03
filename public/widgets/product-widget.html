@@ -776,17 +776,17 @@
     }
 
     window.changeColor = function(color) {
+      console.log('changeColor:', color);
       currentState.selectedColor = color;
       const product = currentState.selectedProduct;
-      if (window.openai?.callTool && product) {
-        window.openai.callTool('show_mockup', {
-          designId: currentState.designId || 'default',
-          productId: product.id,
-          color: color,
-          size: currentState.selectedSize
+
+      if (product) {
+        // Update color swatches selection
+        document.querySelectorAll('.color-swatch').forEach(swatch => {
+          swatch.classList.toggle('selected', swatch.classList.contains(`color-${color}`));
         });
-      } else if (product) {
-        // Fallback: update mockup directly
+
+        // Re-render mockup with new color (SVG first)
         renderMockup({
           designId: currentState.designId,
           productId: product.id,
@@ -794,26 +794,31 @@
           color: color,
           size: currentState.selectedSize,
           price: product.basePrice,
-          designImageUrl: currentState.designImageUrl
+          designImageUrl: currentState.designImageUrl,
+          availableColors: product.colors,
+          availableSizes: product.sizes
         });
+
+        // Fetch realistic mockup for new color
+        if (currentState.designImageUrl) {
+          fetchRealisticMockup(product.id, color, currentState.selectedSize);
+        }
       }
     }
 
     window.changeSize = function(size) {
+      console.log('changeSize:', size);
       currentState.selectedSize = size;
       const product = currentState.selectedProduct;
-      if (window.openai?.callTool && product) {
-        window.openai.callTool('show_mockup', {
-          designId: currentState.designId || 'default',
-          productId: product.id,
-          color: currentState.selectedColor,
-          size: size
-        });
-      } else if (product) {
-        // Fallback: update size display
+
+      if (product) {
+        // Update size buttons selection
         document.querySelectorAll('.option-btn').forEach(btn => {
           btn.classList.toggle('selected', btn.textContent === size);
         });
+
+        // Note: Size doesn't change the mockup image, just the selection
+        // Printful mockup looks the same regardless of size
       }
     }
 
