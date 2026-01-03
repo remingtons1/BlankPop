@@ -29,13 +29,6 @@ const PRINTFUL_API_KEY = process.env.PRINTFUL_API_KEY || "UxhlP1zoJfn8mZglOwamJX
 const PRINTFUL_STORE_ID = process.env.PRINTFUL_STORE_ID || "12456551";
 const PRINTFUL_API_URL = "https://api.printful.com";
 
-// Debug: Log env vars at startup
-console.log("ENV DEBUG:");
-console.log("  PRINTFUL_API_KEY set:", !!PRINTFUL_API_KEY);
-console.log("  PRINTFUL_API_KEY length:", PRINTFUL_API_KEY?.length || 0);
-console.log("  PRINTFUL_STORE_ID:", PRINTFUL_STORE_ID);
-console.log("  All env keys:", Object.keys(process.env).filter(k => k.includes('PRINTFUL')));
-
 // Printful product mapping
 const PRINTFUL_PRODUCTS = {
   tshirt: {
@@ -46,7 +39,13 @@ const PRINTFUL_PRODUCTS = {
       black: { S: 4016, M: 4017, L: 4018, XL: 4019, "2XL": 4020 },
       navy: { S: 4166, M: 4167, L: 4168, XL: 4169, "2XL": 4170 },
     },
-    printfile: { width: 1800, height: 2400, placement: "front" },
+    printfile: {
+      width: 1800,
+      height: 2400,
+      placement: "front",
+      // Centered design position
+      position: { width: 1200, height: 1200, top: 200, left: 300 }
+    },
   },
   hoodie: {
     productId: 146,
@@ -56,7 +55,12 @@ const PRINTFUL_PRODUCTS = {
       black: { S: 5530, M: 5531, L: 5532, XL: 5533, "2XL": 5534 },
       gray: { S: 5581, M: 5582, L: 5583, XL: 5584, "2XL": 5585 },
     },
-    printfile: { width: 1800, height: 2400, placement: "front" },
+    printfile: {
+      width: 1800,
+      height: 2400,
+      placement: "front",
+      position: { width: 1100, height: 1100, top: 250, left: 350 }
+    },
   },
   mug: {
     productId: 19,
@@ -64,7 +68,12 @@ const PRINTFUL_PRODUCTS = {
     variants: {
       white: { "11oz": 1320, "15oz": 4830 },
     },
-    printfile: { width: 1524, height: 1524, placement: "default" },
+    printfile: {
+      width: 1524,
+      height: 1524,
+      placement: "default",
+      position: { width: 1000, height: 1000, top: 262, left: 262 }
+    },
   },
   poster: {
     productId: 1,
@@ -72,7 +81,12 @@ const PRINTFUL_PRODUCTS = {
     variants: {
       default: { "8x10": 6239, "12x18": 1, "18x24": 2 },
     },
-    printfile: { width: 1800, height: 2400, placement: "default" },
+    printfile: {
+      width: 1800,
+      height: 2400,
+      placement: "default",
+      position: { width: 1600, height: 1600, top: 100, left: 100 }
+    },
   },
 };
 
@@ -143,7 +157,7 @@ async function generatePrintfulMockup(designImageUrl, productId, color, size) {
     return mockupCache.get(cacheKey);
   }
 
-  const { width, height, placement } = printfulProduct.printfile;
+  const { width, height, placement, position } = printfulProduct.printfile;
 
   try {
     console.log(`Generating Printful mockup for ${productId} (variant ${variantId})...`);
@@ -160,6 +174,7 @@ async function generatePrintfulMockup(designImageUrl, productId, color, size) {
         },
         body: JSON.stringify({
           variant_ids: [variantId],
+          format: "jpg",
           files: [
             {
               placement: placement,
@@ -167,10 +182,10 @@ async function generatePrintfulMockup(designImageUrl, productId, color, size) {
               position: {
                 area_width: width,
                 area_height: height,
-                width: width,
-                height: height,
-                top: 0,
-                left: 0,
+                width: position?.width || width,
+                height: position?.height || height,
+                top: position?.top || 0,
+                left: position?.left || 0,
               },
             },
           ],
@@ -718,15 +733,14 @@ const httpServer = http.createServer(async (req, res) => {
     }
   }
 
-  // Debug endpoint to check env vars
-  if (url.pathname === "/api/debug" && req.method === "GET") {
+  // Health check endpoint
+  if (url.pathname === "/api/health" && req.method === "GET") {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({
-      printfulKeySet: !!PRINTFUL_API_KEY,
-      printfulKeyLength: PRINTFUL_API_KEY?.length || 0,
-      printfulStoreId: PRINTFUL_STORE_ID,
-      printfulEnvKeys: Object.keys(process.env).filter(k => k.includes('PRINTFUL')),
-      allEnvKeys: Object.keys(process.env).sort(),
+      status: "ok",
+      printfulConfigured: !!PRINTFUL_API_KEY,
+      stripeConfigured: !!stripe,
+      openaiConfigured: !!process.env.OPENAI_API_KEY,
     }));
     return;
   }
