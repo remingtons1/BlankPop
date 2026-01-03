@@ -28,6 +28,13 @@ const PRINTFUL_API_KEY = process.env.PRINTFUL_API_KEY;
 const PRINTFUL_STORE_ID = process.env.PRINTFUL_STORE_ID || "12456551";
 const PRINTFUL_API_URL = "https://api.printful.com";
 
+// Debug: Log env vars at startup
+console.log("ENV DEBUG:");
+console.log("  PRINTFUL_API_KEY set:", !!PRINTFUL_API_KEY);
+console.log("  PRINTFUL_API_KEY length:", PRINTFUL_API_KEY?.length || 0);
+console.log("  PRINTFUL_STORE_ID:", PRINTFUL_STORE_ID);
+console.log("  All env keys:", Object.keys(process.env).filter(k => k.includes('PRINTFUL')));
+
 // Printful product mapping
 const PRINTFUL_PRODUCTS = {
   tshirt: {
@@ -708,6 +715,18 @@ const httpServer = http.createServer(async (req, res) => {
       res.end("Design not found");
       return;
     }
+  }
+
+  // Debug endpoint to check env vars
+  if (url.pathname === "/api/debug" && req.method === "GET") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({
+      printfulKeySet: !!PRINTFUL_API_KEY,
+      printfulKeyLength: PRINTFUL_API_KEY?.length || 0,
+      printfulStoreId: PRINTFUL_STORE_ID,
+      envKeys: Object.keys(process.env).filter(k => k.includes('PRINTFUL')),
+    }));
+    return;
   }
 
   // API endpoint for generating Printful mockups
