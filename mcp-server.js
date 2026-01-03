@@ -93,6 +93,9 @@ const PRINTFUL_PRODUCTS = {
 // In-memory store for generated designs
 const designStore = new Map();
 
+// Store for Stripe checkout sessions (for short URL redirect)
+const checkoutSessions = new Map();
+
 // Cache for generated mockups (designId-productId-color -> mockupUrl)
 const mockupCache = new Map();
 
@@ -851,10 +854,19 @@ const httpServer = http.createServer(async (req, res) => {
 
         console.log(`Stripe session created: ${session.id}`);
 
+        // Store session for redirect lookup (expires in 24h)
+        checkoutSessions.set(session.id, {
+          url: session.url,
+          createdAt: Date.now(),
+        });
+
+        // Return short redirect URL instead of long Stripe URL
+        const shortUrl = `${baseUrl}/pay/${session.id}`;
+
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify({
           success: true,
-          checkoutUrl: session.url,
+          checkoutUrl: shortUrl,
           sessionId: session.id,
           total: total + 5.99,
         }));
@@ -865,6 +877,29 @@ const httpServer = http.createServer(async (req, res) => {
       }
     });
     return;
+  }
+
+  // Short URL redirect for Stripe checkout
+  if (url.pathname.startsWith("/pay/")) {
+    const sessionId = url.pathname.replace("/pay/", "");
+    const session = checkoutSessions.get(sessionId);
+
+    if (session && session.url) {
+      // Clean up old sessions (older than 24h)
+      const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
+      for (const [id, data] of checkoutSessions) {
+        if (data.createdAt < dayAgo) checkoutSessions.delete(id);
+      }
+
+      // Redirect to Stripe
+      res.writeHead(302, { Location: session.url });
+      res.end();
+      return;
+    } else {
+      res.writeHead(404, { "Content-Type": "text/html" });
+      res.end("<h1>Checkout session not found or expired</h1><p>Please try again.</p>");
+      return;
+    }
   }
 
   // Serve static files from /images/
