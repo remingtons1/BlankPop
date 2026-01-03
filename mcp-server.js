@@ -69,10 +69,11 @@ const PRINTFUL_PRODUCTS = {
       white: { "11oz": 1320, "15oz": 4830 },
     },
     printfile: {
-      width: 1524,
-      height: 1524,
+      width: 2700,
+      height: 1050,
       placement: "default",
-      position: { width: 1000, height: 1000, top: 262, left: 262 }
+      // Center the design on the wrap-around print area
+      position: { width: 900, height: 900, top: 75, left: 900 }
     },
   },
   poster: {
@@ -223,7 +224,18 @@ async function generatePrintfulMockup(designImageUrl, productId, color, size) {
       const statusData = await statusResponse.json();
 
       if (statusData.result.status === "completed") {
-        const mockupUrl = statusData.result.mockups?.[0]?.mockup_url;
+        let mockupUrl = statusData.result.mockups?.[0]?.mockup_url;
+        const extras = statusData.result.mockups?.[0]?.extra || [];
+
+        // For mugs, prefer "Front view" from extras
+        if (productId === "mug") {
+          const frontView = extras.find(e => e.option === "Front view" || e.title === "Front view");
+          if (frontView?.url) {
+            mockupUrl = frontView.url;
+            console.log(`Using mug front view: ${mockupUrl}`);
+          }
+        }
+
         console.log(`Mockup completed: ${mockupUrl}`);
 
         // Cache the result
