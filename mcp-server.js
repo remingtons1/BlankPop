@@ -24,7 +24,8 @@ const stripe = process.env.STRIPE_SECRET_KEY
   : null;
 
 // Printful API configuration
-const PRINTFUL_API_KEY = process.env.PRINTFUL_API_KEY;
+// Fallback to hardcoded key if env var not set (Railway env var issue workaround)
+const PRINTFUL_API_KEY = process.env.PRINTFUL_API_KEY || "UxhlP1zoJfn8mZglOwamJXtX0U8TGA1XP3yATYWr";
 const PRINTFUL_STORE_ID = process.env.PRINTFUL_STORE_ID || "12456551";
 const PRINTFUL_API_URL = "https://api.printful.com";
 
