@@ -724,7 +724,8 @@ const httpServer = http.createServer(async (req, res) => {
       printfulKeySet: !!PRINTFUL_API_KEY,
       printfulKeyLength: PRINTFUL_API_KEY?.length || 0,
       printfulStoreId: PRINTFUL_STORE_ID,
-      envKeys: Object.keys(process.env).filter(k => k.includes('PRINTFUL')),
+      printfulEnvKeys: Object.keys(process.env).filter(k => k.includes('PRINTFUL')),
+      allEnvKeys: Object.keys(process.env).sort(),
     }));
     return;
   }
