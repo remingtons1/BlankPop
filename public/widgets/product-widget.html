@@ -377,12 +377,134 @@
     }
 
     .hidden { display: none; }
+
+    /* Loading Skeleton */
+    .loading-view {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg, #1a1a1a 25%, #252525 50%, #1a1a1a 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 8px;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-design {
+      width: 200px;
+      height: 200px;
+      margin: 0 auto 16px;
+      border-radius: 12px;
+    }
+
+    .skeleton-text {
+      height: 16px;
+      margin: 8px auto;
+      border-radius: 4px;
+    }
+
+    .skeleton-text.title {
+      width: 150px;
+      height: 20px;
+    }
+
+    .skeleton-text.subtitle {
+      width: 250px;
+    }
+
+    .skeleton-products {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .skeleton-product {
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .skeleton-product-image {
+      width: 100%;
+      aspect-ratio: 1;
+      margin-bottom: 8px;
+    }
+
+    .skeleton-product-text {
+      height: 14px;
+      margin-bottom: 6px;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border: 3px solid #333;
+      border-top-color: #10b981;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 12px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      color: #10b981;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .loading-subtext {
+      color: #666;
+      font-size: 12px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
       <div class="logo"><span>Blank</span><span>Pop</span></div>
+    </div>
+
+    <!-- Loading View (shown while generating) -->
+    <div id="loading-view" class="loading-view">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Creating your design...</div>
+      <div class="loading-subtext">This usually takes 10-15 seconds</div>
+
+      <div class="skeleton skeleton-design"></div>
+
+      <div class="skeleton-products">
+        <div class="skeleton-product">
+          <div class="skeleton skeleton-product-image"></div>
+          <div class="skeleton skeleton-product-text" style="width: 60%"></div>
+          <div class="skeleton skeleton-product-text" style="width: 40%"></div>
+        </div>
+        <div class="skeleton-product">
+          <div class="skeleton skeleton-product-image"></div>
+          <div class="skeleton skeleton-product-text" style="width: 60%"></div>
+          <div class="skeleton skeleton-product-text" style="width: 40%"></div>
+        </div>
+        <div class="skeleton-product">
+          <div class="skeleton skeleton-product-image"></div>
+          <div class="skeleton skeleton-product-text" style="width: 60%"></div>
+          <div class="skeleton skeleton-product-text" style="width: 40%"></div>
+        </div>
+        <div class="skeleton-product">
+          <div class="skeleton skeleton-product-image"></div>
+          <div class="skeleton skeleton-product-text" style="width: 60%"></div>
+          <div class="skeleton skeleton-product-text" style="width: 40%"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Design Preview (shown when design is generated) -->
@@ -484,6 +606,9 @@
 
     // Initialize
     function init() {
+      // Show loading state by default
+      showView('loading');
+
       // Listen for tool output updates from ChatGPT
       window.addEventListener('openai:set_globals', handleUpdate);
 
@@ -557,6 +682,7 @@
 
     function showView(view) {
       currentState.view = view;
+      document.getElementById('loading-view').classList.toggle('hidden', view !== 'loading');
       document.getElementById('products-view').classList.toggle('hidden', view !== 'products');
       document.getElementById('mockup-view').classList.toggle('hidden', view !== 'mockup');
       document.getElementById('checkout-view').classList.toggle('hidden', view !== 'checkout');
