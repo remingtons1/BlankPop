@@ -181,7 +181,7 @@ async function generatePrintfulMockup(designImageUrl, productId, color, size) {
     const createData = await createResponse.json();
     if (createData.code !== 200) {
       console.error("Printful create task error:", createData);
-      return null;
+      return { error: `Printful API error: ${createData.error?.message || createData.result?.error || JSON.stringify(createData)}` };
     }
 
     const taskKey = createData.result.task_key;
@@ -222,7 +222,7 @@ async function generatePrintfulMockup(designImageUrl, productId, color, size) {
         };
       } else if (statusData.result.status === "failed") {
         console.error("Mockup generation failed:", statusData);
-        return null;
+        return { error: `Printful mockup failed: ${statusData.result.error || 'Unknown error'}` };
       }
 
       attempts++;
