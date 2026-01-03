@@ -476,21 +476,31 @@ server.registerTool(
     // Design image URL (the generated design)
     const designImageUrl = design ? `${baseUrl}${design.localPath}` : null;
 
-    // Try to generate realistic mockup with Printful
+    // Try to generate realistic mockup with Printful (with timeout)
     let realisticMockupUrl = null;
     let allMockupViews = null;
 
     if (designImageUrl && PRINTFUL_API_KEY) {
-      const mockupResult = await generatePrintfulMockup(
-        designImageUrl,
-        productId,
-        selectedColor,
-        selectedSize
-      );
+      try {
+        // Set a 15-second timeout for Printful
+        const mockupPromise = generatePrintfulMockup(
+          designImageUrl,
+          productId,
+          selectedColor,
+          selectedSize
+        );
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Printful timeout")), 15000)
+        );
 
-      if (mockupResult) {
-        realisticMockupUrl = mockupResult.mockupUrl;
-        allMockupViews = mockupResult.allMockups?.[0]?.extra || [];
+        const mockupResult = await Promise.race([mockupPromise, timeoutPromise]);
+
+        if (mockupResult) {
+          realisticMockupUrl = mockupResult.mockupUrl;
+          allMockupViews = mockupResult.allMockups?.[0]?.extra || [];
+        }
+      } catch (error) {
+        console.log(`Printful mockup skipped: ${error.message}`);
       }
     }
 

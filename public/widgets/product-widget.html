@@ -470,7 +470,7 @@
 
     // Product images mapping (using blankpop.online)
     const BASE_URL = 'https://blankpop.online';
-    const IMG_VERSION = 'v5'; // Cache buster - increment when SVGs change
+    const IMG_VERSION = 'v6'; // Cache buster - increment when SVGs change
     const productImages = {
       'tshirt-white': `${BASE_URL}/images/tshirt-white.svg?${IMG_VERSION}`,
       'tshirt-black': `${BASE_URL}/images/tshirt-black.svg?${IMG_VERSION}`,
@@ -613,22 +613,34 @@
     // Make selectProduct globally accessible
     window.selectProduct = function(productId) {
       console.log('selectProduct called:', productId);
+      console.log('currentState.products:', currentState.products);
+      console.log('openai available:', !!window.openai);
+      console.log('openai.callTool available:', !!window.openai?.callTool);
+
       const product = currentState.products.find(p => p.id === productId);
       if (!product) {
         console.error('Product not found:', productId);
+        console.log('Available product IDs:', currentState.products.map(p => p.id));
         return;
       }
 
       currentState.selectedProduct = product;
+      currentState.selectedColor = product.colors?.[0] || '';
+      currentState.selectedSize = product.sizes?.[0] || '';
 
       // Call the show_mockup tool
       if (window.openai?.callTool) {
-        console.log('Calling show_mockup tool');
+        console.log('Calling show_mockup tool with:', {
+          designId: currentState.designId || 'default',
+          productId: productId,
+          color: currentState.selectedColor,
+          size: currentState.selectedSize
+        });
         window.openai.callTool('show_mockup', {
           designId: currentState.designId || 'default',
           productId: productId,
-          color: product.colors?.[0] || '',
-          size: product.sizes?.[0] || ''
+          color: currentState.selectedColor,
+          size: currentState.selectedSize
         });
       } else {
         console.log('openai.callTool not available, showing mockup directly');
@@ -637,10 +649,12 @@
           designId: currentState.designId,
           productId: productId,
           product: product.name,
-          color: product.colors?.[0] || '',
-          size: product.sizes?.[0] || '',
+          color: currentState.selectedColor,
+          size: currentState.selectedSize,
           price: product.basePrice,
-          designImageUrl: currentState.designImageUrl
+          designImageUrl: currentState.designImageUrl,
+          availableColors: product.colors,
+          availableSizes: product.sizes
         });
         showView('mockup');
       }
