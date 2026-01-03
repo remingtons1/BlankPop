@@ -625,7 +625,7 @@
       currentState.selectedColor = product.colors?.[0] || '';
       currentState.selectedSize = product.sizes?.[0] || '';
 
-      // Show mockup view immediately (don't wait for tool)
+      // Show mockup view immediately with SVG fallback
       console.log('Showing mockup view directly');
       renderMockup({
         designId: currentState.designId,
@@ -640,18 +640,67 @@
       });
       showView('mockup');
 
-      // Also try calling tool for realistic mockup (async update)
-      if (window.openai?.callTool) {
-        console.log('Also calling show_mockup tool for realistic mockup');
-        try {
-          window.openai.callTool('show_mockup', {
-            designId: currentState.designId || 'default',
+      // Fetch realistic mockup from API in background
+      if (currentState.designImageUrl) {
+        fetchRealisticMockup(productId, currentState.selectedColor, currentState.selectedSize);
+      }
+    }
+
+    // Fetch realistic mockup from Printful via our API
+    async function fetchRealisticMockup(productId, color, size) {
+      const mockupStatus = document.getElementById('mockup-title');
+      if (mockupStatus) {
+        mockupStatus.textContent += ' (loading realistic preview...)';
+      }
+
+      try {
+        console.log('Fetching realistic mockup from API...');
+        const response = await fetch('https://blankpop.online/api/mockup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            designImageUrl: currentState.designImageUrl,
             productId: productId,
-            color: currentState.selectedColor,
-            size: currentState.selectedSize
-          });
-        } catch (e) {
-          console.log('callTool error:', e);
+            color: color,
+            size: size
+          })
+        });
+
+        const data = await response.json();
+        console.log('API mockup response:', data);
+
+        if (data.success && data.mockupUrl) {
+          // Update the mockup image with realistic version
+          const mockupImg = document.getElementById('mockup-product-image');
+          const designOverlay = document.getElementById('mockup-design-overlay');
+
+          if (mockupImg) {
+            mockupImg.src = data.mockupUrl;
+            document.querySelector('.mockup-container')?.classList.add('realistic-mockup');
+          }
+          if (designOverlay) {
+            designOverlay.classList.add('hidden'); // Hide overlay for realistic mockup
+          }
+
+          // Update title to remove loading text
+          if (mockupStatus) {
+            const product = currentState.selectedProduct;
+            mockupStatus.textContent = `${color ? color.charAt(0).toUpperCase() + color.slice(1) + ' ' : ''}${product?.name || 'Product'}`;
+          }
+
+          currentState.realisticMockupUrl = data.mockupUrl;
+        } else {
+          console.log('No realistic mockup available, keeping SVG');
+          if (mockupStatus) {
+            const product = currentState.selectedProduct;
+            mockupStatus.textContent = `${color ? color.charAt(0).toUpperCase() + color.slice(1) + ' ' : ''}${product?.name || 'Product'}`;
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch realistic mockup:', error);
+        if (mockupStatus) {
+          const product = currentState.selectedProduct;
+          mockupStatus.textContent = `${color ? color.charAt(0).toUpperCase() + color.slice(1) + ' ' : ''}${product?.name || 'Product'}`;
         }
       }
     }

@@ -708,6 +708,38 @@ const httpServer = http.createServer(async (req, res) => {
     }
   }
 
+  // API endpoint for generating Printful mockups
+  if (url.pathname === "/api/mockup" && req.method === "POST") {
+    let body = "";
+    req.on("data", (chunk) => (body += chunk));
+    req.on("end", async () => {
+      try {
+        const { designImageUrl, productId, color, size } = JSON.parse(body);
+        console.log(`API mockup request: ${productId} ${color} ${size}`);
+
+        if (!designImageUrl) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "designImageUrl required" }));
+          return;
+        }
+
+        const mockupResult = await generatePrintfulMockup(designImageUrl, productId, color, size);
+
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({
+          success: !!mockupResult,
+          mockupUrl: mockupResult?.mockupUrl || null,
+          allMockups: mockupResult?.allMockups || null,
+        }));
+      } catch (error) {
+        console.error("API mockup error:", error);
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: error.message }));
+      }
+    });
+    return;
+  }
+
   // Serve static files from /images/
   if (req.url?.startsWith("/images/")) {
     const filename = req.url.replace("/images/", "").split("?")[0]; // Strip query params
