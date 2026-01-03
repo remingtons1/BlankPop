@@ -625,35 +625,34 @@
       currentState.selectedColor = product.colors?.[0] || '';
       currentState.selectedSize = product.sizes?.[0] || '';
 
-      // Call the show_mockup tool
+      // Show mockup view immediately (don't wait for tool)
+      console.log('Showing mockup view directly');
+      renderMockup({
+        designId: currentState.designId,
+        productId: productId,
+        product: product.name,
+        color: currentState.selectedColor,
+        size: currentState.selectedSize,
+        price: product.basePrice,
+        designImageUrl: currentState.designImageUrl,
+        availableColors: product.colors,
+        availableSizes: product.sizes
+      });
+      showView('mockup');
+
+      // Also try calling tool for realistic mockup (async update)
       if (window.openai?.callTool) {
-        console.log('Calling show_mockup tool with:', {
-          designId: currentState.designId || 'default',
-          productId: productId,
-          color: currentState.selectedColor,
-          size: currentState.selectedSize
-        });
-        window.openai.callTool('show_mockup', {
-          designId: currentState.designId || 'default',
-          productId: productId,
-          color: currentState.selectedColor,
-          size: currentState.selectedSize
-        });
-      } else {
-        console.log('openai.callTool not available, showing mockup directly');
-        // Fallback: show mockup view directly
-        renderMockup({
-          designId: currentState.designId,
-          productId: productId,
-          product: product.name,
-          color: currentState.selectedColor,
-          size: currentState.selectedSize,
-          price: product.basePrice,
-          designImageUrl: currentState.designImageUrl,
-          availableColors: product.colors,
-          availableSizes: product.sizes
-        });
-        showView('mockup');
+        console.log('Also calling show_mockup tool for realistic mockup');
+        try {
+          window.openai.callTool('show_mockup', {
+            designId: currentState.designId || 'default',
+            productId: productId,
+            color: currentState.selectedColor,
+            size: currentState.selectedSize
+          });
+        } catch (e) {
+          console.log('callTool error:', e);
+        }
       }
     }
 
