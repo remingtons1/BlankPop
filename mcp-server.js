@@ -109,13 +109,13 @@ async function downloadImage(url, filepath) {
 async function generatePrintfulMockup(designImageUrl, productId, color, size) {
   if (!PRINTFUL_API_KEY) {
     console.log("Printful API key not set, skipping mockup generation");
-    return null;
+    return { error: "PRINTFUL_API_KEY not configured" };
   }
 
   const printfulProduct = PRINTFUL_PRODUCTS[productId];
   if (!printfulProduct) {
     console.log(`No Printful mapping for product: ${productId}`);
-    return null;
+    return { error: `No Printful mapping for product: ${productId}` };
   }
 
   // Get the variant ID for the color/size combination
@@ -125,7 +125,7 @@ async function generatePrintfulMockup(designImageUrl, productId, color, size) {
 
   if (!variantId) {
     console.log(`No variant found for ${productId} ${colorKey} ${sizeKey}`);
-    return null;
+    return { error: `No variant found for ${productId} ${colorKey} ${sizeKey}` };
   }
 
   // Check cache first
@@ -221,10 +221,10 @@ async function generatePrintfulMockup(designImageUrl, productId, color, size) {
     }
 
     console.log("Mockup generation timed out");
-    return null;
+    return { error: "Mockup generation timed out" };
   } catch (error) {
     console.error("Printful mockup error:", error.message);
-    return null;
+    return { error: `Printful error: ${error.message}` };
   }
 }
 
@@ -495,9 +495,11 @@ server.registerTool(
 
         const mockupResult = await Promise.race([mockupPromise, timeoutPromise]);
 
-        if (mockupResult) {
+        if (mockupResult?.mockupUrl) {
           realisticMockupUrl = mockupResult.mockupUrl;
           allMockupViews = mockupResult.allMockups?.[0]?.extra || [];
+        } else if (mockupResult?.error) {
+          console.log(`Printful mockup error: ${mockupResult.error}`);
         }
       } catch (error) {
         console.log(`Printful mockup skipped: ${error.message}`);
@@ -727,9 +729,10 @@ const httpServer = http.createServer(async (req, res) => {
 
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify({
-          success: !!mockupResult,
+          success: !!mockupResult?.mockupUrl,
           mockupUrl: mockupResult?.mockupUrl || null,
           allMockups: mockupResult?.allMockups || null,
+          error: mockupResult?.error || null,
         }));
       } catch (error) {
         console.error("API mockup error:", error);
