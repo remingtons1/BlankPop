@@ -470,7 +470,7 @@
 
     // Product images mapping (using blankpop.online)
     const BASE_URL = 'https://blankpop.online';
-    const IMG_VERSION = 'v6'; // Cache buster - increment when SVGs change
+    const IMG_VERSION = 'v7'; // Cache buster - increment when SVGs change
     const productImages = {
       'tshirt-white': `${BASE_URL}/images/tshirt-white.svg?${IMG_VERSION}`,
       'tshirt-black': `${BASE_URL}/images/tshirt-black.svg?${IMG_VERSION}`,
@@ -589,7 +589,7 @@
         const productType = product.id.split('-')[0]; // Extract 'tshirt', 'hoodie', 'mug', 'poster'
 
         return `
-          <div class="product-card" data-product-id="${product.id}" data-product-type="${productType}">
+          <div class="product-card" data-product-id="${product.id}" data-product-type="${productType}" onclick="window.selectProduct('${product.id}')">
             <div class="product-image-container">
               <img class="product-image" src="${imageUrl}" alt="${product.name}">
               ${designUrl ? `<img class="product-design-overlay" src="${designUrl}" alt="Design">` : ''}
@@ -599,15 +599,6 @@
           </div>
         `;
       }).join('');
-
-      // Add click handlers via event delegation
-      grid.querySelectorAll('.product-card').forEach(card => {
-        card.addEventListener('click', () => {
-          const productId = card.dataset.productId;
-          console.log('Product card clicked:', productId);
-          window.selectProduct(productId);
-        });
-      });
     }
 
     // Make selectProduct globally accessible
