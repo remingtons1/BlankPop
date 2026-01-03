@@ -651,6 +651,37 @@
       height: 100%;
       object-fit: cover;
     }
+
+    /* Regenerate Design Prompt */
+    .regenerate-prompt {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .regenerate-btn {
+      background: none;
+      border: none;
+      color: #10b981;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+      transition: color 0.2s;
+    }
+
+    .regenerate-btn:hover {
+      color: #0d9668;
+    }
+
+    .regenerate-btn:disabled {
+      color: #444;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
@@ -715,6 +746,11 @@
       </div>
 
       <button id="hero-buy-btn" class="hero-buy-btn">Buy Now - $34.99</button>
+
+      <div class="regenerate-prompt">
+        <span>Don't love it?</span>
+        <button id="regenerate-btn" class="regenerate-btn">Try another design</button>
+      </div>
 
       <div class="also-available">
         <div class="also-available-title">Also available on</div>
@@ -839,6 +875,7 @@
         showView('hero');
       });
       document.getElementById('complete-checkout-btn')?.addEventListener('click', handleCompleteCheckout);
+      document.getElementById('regenerate-btn')?.addEventListener('click', handleRegenerateDesign);
     }
 
     function handleUpdate() {
@@ -863,6 +900,13 @@
           currentState.selectedProduct = currentState.products.find(p => p.id === 'tshirt');
           currentState.selectedColor = 'white';
           currentState.selectedSize = 'M';
+          // Reset regenerate button
+          const regenBtn = document.getElementById('regenerate-btn');
+          if (regenBtn) {
+            regenBtn.disabled = false;
+            regenBtn.textContent = 'Try another design';
+          }
+          document.getElementById('design-badge').style.display = 'block';
           // Show hero view and fetch realistic mockup
           renderHeroView();
           showView('hero');
@@ -1348,6 +1392,41 @@
         currentState.selectedSize = product.sizes?.[0] || '';
         renderHeroView();
         fetchHeroMockup();
+      }
+    }
+
+    function handleRegenerateDesign() {
+      const btn = document.getElementById('regenerate-btn');
+      const prompt = currentState.designPrompt;
+
+      // Disable button
+      btn.disabled = true;
+      btn.textContent = 'Generating...';
+
+      // Show loading state in hero view
+      document.getElementById('hero-mockup-loading').classList.remove('hidden');
+      document.getElementById('hero-mockup-image').style.opacity = '0';
+      document.getElementById('design-badge').style.display = 'none';
+
+      // Clear current design state
+      currentState.designImageUrl = null;
+      currentState.heroMockupUrl = null;
+
+      // Send message to ChatGPT to regenerate
+      if (window.openai?.sendFollowUpMessage) {
+        const message = prompt
+          ? `Generate a different design variation for: "${prompt}"`
+          : 'Generate a different design please';
+        window.openai.sendFollowUpMessage(message);
+      } else {
+        // Fallback - reset button if no ChatGPT connection
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.textContent = 'Try another design';
+          document.getElementById('hero-mockup-loading').classList.add('hidden');
+          document.getElementById('hero-mockup-image').style.opacity = '1';
+          document.getElementById('design-badge').style.display = 'block';
+        }, 1000);
       }
     }
 
