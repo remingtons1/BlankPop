@@ -197,6 +197,25 @@
       max-width: 180px;
     }
 
+    /* Realistic mockup styling */
+    .mockup-container.realistic-mockup .mockup-product-image {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .realistic-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 12px;
+      margin-left: 8px;
+      text-transform: uppercase;
+    }
+
     .mockup-details {
       text-align: center;
     }
@@ -443,12 +462,15 @@
       designId: null,
       designImageUrl: null,
       designPrompt: null,
+      realisticMockupUrl: null,
+      availableColors: [],
+      availableSizes: [],
       checkout: null
     };
 
     // Product images mapping (using blankpop.online)
     const BASE_URL = 'https://blankpop.online';
-    const IMG_VERSION = 'v4'; // Cache buster - increment when SVGs change
+    const IMG_VERSION = 'v5'; // Cache buster - increment when SVGs change
     const productImages = {
       'tshirt-white': `${BASE_URL}/images/tshirt-white.svg?${IMG_VERSION}`,
       'tshirt-black': `${BASE_URL}/images/tshirt-black.svg?${IMG_VERSION}`,
@@ -509,6 +531,17 @@
           // Update design URL if provided
           if (data.mockup.designImageUrl) {
             currentState.designImageUrl = data.mockup.designImageUrl;
+          }
+          // Store realistic mockup URL
+          if (data.mockup.realisticMockupUrl) {
+            currentState.realisticMockupUrl = data.mockup.realisticMockupUrl;
+          }
+          // Store available options
+          if (data.mockup.availableColors) {
+            currentState.availableColors = data.mockup.availableColors;
+          }
+          if (data.mockup.availableSizes) {
+            currentState.availableSizes = data.mockup.availableSizes;
           }
           renderMockup(data.mockup);
           showView('mockup');
@@ -617,23 +650,40 @@
       const product = currentState.selectedProduct;
       const productType = mockup.productId.split('-')[0]; // Extract 'tshirt', 'hoodie', 'mug', 'poster'
 
-      // Build image URL even without product loaded
-      const imageKey = mockup.color ? `${mockup.productId}-${mockup.color}` : mockup.productId;
-      const productImageUrl = productImages[imageKey] || productImages[mockup.productId] || mockup.productImageUrl;
-
       // Set product type for CSS positioning
       document.querySelector('.mockup-container').setAttribute('data-product-type', productType);
 
-      // Set product image
-      document.getElementById('mockup-product-image').src = productImageUrl;
-
-      // Set design overlay if available
+      // Check if we have a realistic mockup from Printful
+      const isRealistic = mockup.isRealisticMockup || mockup.realisticMockupUrl;
       const designOverlay = document.getElementById('mockup-design-overlay');
-      if (mockup.designImageUrl || currentState.designImageUrl) {
-        designOverlay.src = mockup.designImageUrl || currentState.designImageUrl;
-        designOverlay.classList.remove('hidden');
-      } else {
+
+      if (isRealistic && mockup.realisticMockupUrl) {
+        // Use Printful's realistic mockup - no overlay needed
+        document.getElementById('mockup-product-image').src = mockup.realisticMockupUrl;
         designOverlay.classList.add('hidden');
+        document.querySelector('.mockup-container').classList.add('realistic-mockup');
+      } else {
+        // Fallback to SVG + overlay
+        const imageKey = mockup.color ? `${mockup.productId}-${mockup.color}` : mockup.productId;
+        const productImageUrl = productImages[imageKey] || productImages[mockup.productId] || mockup.productImageUrl;
+        document.getElementById('mockup-product-image').src = productImageUrl;
+        document.querySelector('.mockup-container').classList.remove('realistic-mockup');
+
+        // Set design overlay if available
+        if (mockup.designImageUrl || currentState.designImageUrl) {
+          designOverlay.src = mockup.designImageUrl || currentState.designImageUrl;
+          designOverlay.classList.remove('hidden');
+        } else {
+          designOverlay.classList.add('hidden');
+        }
+      }
+
+      // Store available options from mockup data
+      if (mockup.availableColors) {
+        currentState.availableColors = mockup.availableColors;
+      }
+      if (mockup.availableSizes) {
+        currentState.availableSizes = mockup.availableSizes;
       }
 
       document.getElementById('mockup-title').textContent = `${mockup.color ? mockup.color.charAt(0).toUpperCase() + mockup.color.slice(1) + ' ' : ''}${mockup.product}`;
@@ -641,7 +691,7 @@
 
       // Render color options
       const colorOptions = document.getElementById('color-options');
-      const availableColors = product?.colors || [];
+      const availableColors = mockup.availableColors || product?.colors || currentState.availableColors || [];
       if (availableColors.length > 0) {
         colorOptions.innerHTML = availableColors.map(color => `
           <div class="color-swatch color-${color} ${color === currentState.selectedColor ? 'selected' : ''}"
@@ -653,11 +703,17 @@
 
       // Render size options
       const sizeOptions = document.getElementById('size-options');
-      const availableSizes = product?.sizes || [mockup.size].filter(Boolean);
+      const availableSizes = mockup.availableSizes || product?.sizes || currentState.availableSizes || [mockup.size].filter(Boolean);
       sizeOptions.innerHTML = availableSizes.map(size => `
         <button class="option-btn ${size === currentState.selectedSize ? 'selected' : ''}"
                 onclick="changeSize('${size}')">${size}</button>
       `).join('');
+
+      // Show loading indicator status
+      const loadingStatus = isRealistic ? '' : ' (generating preview...)';
+      if (!isRealistic && mockup.hasDesign) {
+        document.getElementById('mockup-title').textContent += loadingStatus;
+      }
     }
 
     window.changeColor = function(color) {

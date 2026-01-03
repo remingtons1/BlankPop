@@ -23,8 +23,56 @@ const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
   : null;
 
+// Printful API configuration
+const PRINTFUL_API_KEY = process.env.PRINTFUL_API_KEY;
+const PRINTFUL_STORE_ID = process.env.PRINTFUL_STORE_ID || "12456551";
+const PRINTFUL_API_URL = "https://api.printful.com";
+
+// Printful product mapping
+const PRINTFUL_PRODUCTS = {
+  tshirt: {
+    productId: 71,
+    name: "Unisex Staple T-Shirt | Bella + Canvas 3001",
+    variants: {
+      white: { S: 4012, M: 4013, L: 4014, XL: 4015, "2XL": 4015 },
+      black: { S: 4016, M: 4017, L: 4018, XL: 4019, "2XL": 4020 },
+      navy: { S: 4166, M: 4167, L: 4168, XL: 4169, "2XL": 4170 },
+    },
+    printfile: { width: 1800, height: 2400, placement: "front" },
+  },
+  hoodie: {
+    productId: 146,
+    name: "Unisex Heavy Blend Hoodie | Gildan 18500",
+    variants: {
+      white: { S: 5524, M: 5523, L: 5524, XL: 5525, "2XL": 5526 },
+      black: { S: 5530, M: 5531, L: 5532, XL: 5533, "2XL": 5534 },
+      gray: { S: 5581, M: 5582, L: 5583, XL: 5584, "2XL": 5585 },
+    },
+    printfile: { width: 1800, height: 2400, placement: "front" },
+  },
+  mug: {
+    productId: 19,
+    name: "White Glossy Mug",
+    variants: {
+      white: { "11oz": 1320, "15oz": 4830 },
+    },
+    printfile: { width: 1524, height: 1524, placement: "default" },
+  },
+  poster: {
+    productId: 1,
+    name: "Enhanced Matte Paper Poster",
+    variants: {
+      default: { "8x10": 6239, "12x18": 1, "18x24": 2 },
+    },
+    printfile: { width: 1800, height: 2400, placement: "default" },
+  },
+};
+
 // In-memory store for generated designs
 const designStore = new Map();
+
+// Cache for generated mockups (designId-productId-color -> mockupUrl)
+const mockupCache = new Map();
 
 // Product catalog
 const PRODUCTS = [
@@ -55,6 +103,129 @@ async function downloadImage(url, filepath) {
       reject(err);
     });
   });
+}
+
+// Generate mockup using Printful API
+async function generatePrintfulMockup(designImageUrl, productId, color, size) {
+  if (!PRINTFUL_API_KEY) {
+    console.log("Printful API key not set, skipping mockup generation");
+    return null;
+  }
+
+  const printfulProduct = PRINTFUL_PRODUCTS[productId];
+  if (!printfulProduct) {
+    console.log(`No Printful mapping for product: ${productId}`);
+    return null;
+  }
+
+  // Get the variant ID for the color/size combination
+  const colorKey = color || Object.keys(printfulProduct.variants)[0];
+  const sizeKey = size || Object.keys(printfulProduct.variants[colorKey] || {})[0];
+  const variantId = printfulProduct.variants[colorKey]?.[sizeKey];
+
+  if (!variantId) {
+    console.log(`No variant found for ${productId} ${colorKey} ${sizeKey}`);
+    return null;
+  }
+
+  // Check cache first
+  const cacheKey = `${designImageUrl}-${productId}-${colorKey}`;
+  if (mockupCache.has(cacheKey)) {
+    console.log(`Using cached mockup for ${cacheKey}`);
+    return mockupCache.get(cacheKey);
+  }
+
+  const { width, height, placement } = printfulProduct.printfile;
+
+  try {
+    console.log(`Generating Printful mockup for ${productId} (variant ${variantId})...`);
+
+    // Create mockup generation task
+    const createResponse = await fetch(
+      `${PRINTFUL_API_URL}/mockup-generator/create-task/${printfulProduct.productId}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${PRINTFUL_API_KEY}`,
+          "Content-Type": "application/json",
+          "X-PF-Store-Id": PRINTFUL_STORE_ID,
+        },
+        body: JSON.stringify({
+          variant_ids: [variantId],
+          files: [
+            {
+              placement: placement,
+              image_url: designImageUrl,
+              position: {
+                area_width: width,
+                area_height: height,
+                width: width,
+                height: height,
+                top: 0,
+                left: 0,
+              },
+            },
+          ],
+        }),
+      }
+    );
+
+    const createData = await createResponse.json();
+    if (createData.code !== 200) {
+      console.error("Printful create task error:", createData);
+      return null;
+    }
+
+    const taskKey = createData.result.task_key;
+    console.log(`Mockup task created: ${taskKey}`);
+
+    // Poll for completion (max 30 seconds)
+    let attempts = 0;
+    while (attempts < 15) {
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2 seconds
+
+      const statusResponse = await fetch(
+        `${PRINTFUL_API_URL}/mockup-generator/task?task_key=${taskKey}`,
+        {
+          headers: {
+            Authorization: `Bearer ${PRINTFUL_API_KEY}`,
+            "X-PF-Store-Id": PRINTFUL_STORE_ID,
+          },
+        }
+      );
+
+      const statusData = await statusResponse.json();
+
+      if (statusData.result.status === "completed") {
+        const mockupUrl = statusData.result.mockups?.[0]?.mockup_url;
+        console.log(`Mockup completed: ${mockupUrl}`);
+
+        // Cache the result
+        if (mockupUrl) {
+          mockupCache.set(cacheKey, {
+            mockupUrl,
+            allMockups: statusData.result.mockups,
+          });
+        }
+
+        return {
+          mockupUrl,
+          allMockups: statusData.result.mockups,
+        };
+      } else if (statusData.result.status === "failed") {
+        console.error("Mockup generation failed:", statusData);
+        return null;
+      }
+
+      attempts++;
+    }
+
+    console.log("Mockup generation timed out");
+    return null;
+  } catch (error) {
+    console.error("Printful mockup error:", error.message);
+    return null;
+  }
 }
 
 // Generate design with DALL-E 3
@@ -269,7 +440,7 @@ server.registerTool(
   "show_mockup",
   {
     title: "Show Design on Product",
-    description: "Display the generated design on a specific product",
+    description: "Display the generated design on a specific product with realistic mockup",
     inputSchema: z.object({
       designId: z.string().describe("The design ID"),
       productId: z.string().describe("Product type (tshirt, hoodie, mug, poster)"),
@@ -278,7 +449,7 @@ server.registerTool(
     }),
     _meta: {
       "openai/outputTemplate": "ui://widget/product-widget.html",
-      "openai/toolInvocation/invoking": "Creating mockup...",
+      "openai/toolInvocation/invoking": "Generating realistic product mockup...",
       "openai/toolInvocation/invoked": "Mockup ready!",
     },
   },
@@ -302,13 +473,30 @@ server.registerTool(
     const design = designStore.get(designId);
     const baseUrl = process.env.BASE_URL || "http://localhost:3001";
 
-    // Product mockup image (blank product)
-    const productImageUrl = `https://blankpop.online/images/${productId}-${selectedColor || "white"}.svg`;
+    // Design image URL (the generated design)
+    const designImageUrl = design ? `${baseUrl}${design.localPath}` : null;
 
-    // Design image (the generated design)
-    const designImageUrl = design
-      ? `${baseUrl}${design.localPath}`
-      : null;
+    // Try to generate realistic mockup with Printful
+    let realisticMockupUrl = null;
+    let allMockupViews = null;
+
+    if (designImageUrl && PRINTFUL_API_KEY) {
+      const mockupResult = await generatePrintfulMockup(
+        designImageUrl,
+        productId,
+        selectedColor,
+        selectedSize
+      );
+
+      if (mockupResult) {
+        realisticMockupUrl = mockupResult.mockupUrl;
+        allMockupViews = mockupResult.allMockups?.[0]?.extra || [];
+      }
+    }
+
+    // Fallback to SVG mockup if Printful fails
+    const productImageUrl = realisticMockupUrl ||
+      `https://blankpop.online/images/${productId}-${selectedColor || "white"}.svg`;
 
     return {
       structuredContent: {
@@ -322,13 +510,18 @@ server.registerTool(
           price: product.basePrice,
           productImageUrl,
           designImageUrl,
+          realisticMockupUrl,
+          allMockupViews,
           hasDesign: !!design,
+          isRealisticMockup: !!realisticMockupUrl,
+          availableColors: product.colors,
+          availableSizes: product.sizes,
         },
       },
       content: [
         {
           type: "text",
-          text: `Here's your design on a ${selectedColor ? selectedColor + " " : ""}${product.name} (${selectedSize}) - $${product.basePrice}. Ready to buy?`,
+          text: `Here's your design on a ${selectedColor ? selectedColor + " " : ""}${product.name} (${selectedSize}) - $${product.basePrice}. ${realisticMockupUrl ? "This is a realistic product preview!" : ""} Choose your color and size, then click Buy Now!`,
         },
       ],
     };
