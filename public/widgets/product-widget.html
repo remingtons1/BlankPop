@@ -822,15 +822,51 @@
       }
     }
 
-    function handleBuyClick() {
-      if (window.openai?.callTool) {
-        window.openai.callTool('checkout', {
-          designId: currentState.designId || 'default',
-          productId: currentState.selectedProduct.id,
-          color: currentState.selectedColor,
-          size: currentState.selectedSize,
-          quantity: 1
+    async function handleBuyClick() {
+      const btn = document.getElementById('buy-btn');
+      const product = currentState.selectedProduct;
+
+      if (!product) {
+        console.error('No product selected');
+        return;
+      }
+
+      btn.textContent = 'Processing...';
+      btn.disabled = true;
+
+      try {
+        console.log('Creating checkout session...');
+        const response = await fetch('https://blankpop.online/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            designId: currentState.designId || 'default',
+            productId: product.id,
+            color: currentState.selectedColor,
+            size: currentState.selectedSize,
+            quantity: 1,
+            designImageUrl: currentState.designImageUrl
+          })
         });
+
+        const data = await response.json();
+        console.log('Checkout response:', data);
+
+        if (data.success && data.checkoutUrl) {
+          // Redirect to Stripe Checkout
+          window.open(data.checkoutUrl, '_blank');
+          btn.textContent = 'Buy Now';
+          btn.disabled = false;
+        } else {
+          throw new Error(data.error || 'Failed to create checkout');
+        }
+      } catch (error) {
+        console.error('Checkout error:', error);
+        btn.textContent = 'Error - Try Again';
+        btn.disabled = false;
+        setTimeout(() => {
+          btn.textContent = 'Buy Now';
+        }, 2000);
       }
     }
 

@@ -778,6 +778,87 @@ const httpServer = http.createServer(async (req, res) => {
     return;
   }
 
+  // API endpoint for creating checkout session
+  if (url.pathname === "/api/checkout" && req.method === "POST") {
+    let body = "";
+    req.on("data", (chunk) => (body += chunk));
+    req.on("end", async () => {
+      try {
+        const { designId, productId, color, size, quantity = 1, designImageUrl } = JSON.parse(body);
+        console.log(`API checkout request: ${productId} ${color} ${size}`);
+
+        const product = PRODUCTS.find((p) => p.id === productId);
+        if (!product) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Product not found" }));
+          return;
+        }
+
+        const baseUrl = process.env.BASE_URL || "https://blankpop.online";
+        const selectedColor = color || product.colors[0] || "";
+        const total = product.basePrice * quantity;
+
+        if (!stripe) {
+          res.writeHead(500, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Stripe not configured" }));
+          return;
+        }
+
+        const session = await stripe.checkout.sessions.create({
+          payment_method_types: ["card"],
+          line_items: [
+            {
+              price_data: {
+                currency: "usd",
+                product_data: {
+                  name: `${product.name} - ${selectedColor} (${size})`,
+                  description: "BlankPop custom AI-designed merchandise",
+                  images: designImageUrl ? [designImageUrl] : [],
+                },
+                unit_amount: Math.round(product.basePrice * 100),
+              },
+              quantity: quantity,
+            },
+            {
+              price_data: {
+                currency: "usd",
+                product_data: {
+                  name: "Shipping",
+                },
+                unit_amount: 599,
+              },
+              quantity: 1,
+            },
+          ],
+          mode: "payment",
+          success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${baseUrl}/checkout/cancel`,
+          metadata: {
+            designId: designId || "unknown",
+            productId: productId,
+            color: selectedColor,
+            size: size,
+          },
+        });
+
+        console.log(`Stripe session created: ${session.id}`);
+
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({
+          success: true,
+          checkoutUrl: session.url,
+          sessionId: session.id,
+          total: total + 5.99,
+        }));
+      } catch (error) {
+        console.error("API checkout error:", error);
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: error.message }));
+      }
+    });
+    return;
+  }
+
   // Serve static files from /images/
   if (req.url?.startsWith("/images/")) {
     const filename = req.url.replace("/images/", "").split("?")[0]; // Strip query params
