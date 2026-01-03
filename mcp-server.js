@@ -279,9 +279,17 @@ async function generateDesignWithDALLE(prompt, style) {
 
   const stylePrompt = style ? (styleMap[style.toLowerCase()] || `${style} style`) : 'clean vector illustration';
 
-  const enhancedPrompt = `${cleanedPrompt}, ${stylePrompt}, centered composition, strong contrast, limited color palette, sharp clean edges, crisp silhouette, print ready.
+  const enhancedPrompt = `${cleanedPrompt}, ${stylePrompt}, centered composition, strong contrast, sharp clean edges, crisp silhouette, print ready artwork.
 
-CRITICAL: ONLY the main subject/character on a pure white background. NO decorative elements, NO doodles, NO icons, NO patterns around it, NO background details, NO frame, NO border. Just the single isolated design element, nothing else. Do NOT show this on any product or mockup.`;
+CRITICAL REQUIREMENTS - MUST FOLLOW ALL:
+- ONLY the main subject/character floating on a pure solid white background
+- NO color palette, NO color swatches, NO color bars
+- NO text, NO labels, NO watermarks, NO signatures
+- NO decorative elements, NO doodles, NO icons around it
+- NO patterns, NO background details, NO gradients
+- NO frame, NO border, NO margins, NO presentation mockup
+- Just the single isolated design element centered, nothing else
+- Do NOT show this on any product`;
 
   try {
     console.log(`Generating design with DALL-E 3 (cleaned): "${cleanedPrompt}"`);
