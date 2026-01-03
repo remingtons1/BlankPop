@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
   <rect width="400" height="400" fill="#1a1a1a"/>
   <!-- Mug body -->
-  <ellipse cx="180" cy="280" rx="80" ry="20" fill="#e0e0e0"/>
   <rect x="100" y="100" width="160" height="180" rx="10" fill="#ffffff" stroke="#e0e0e0" stroke-width="2"/>
   <ellipse cx="180" cy="100" rx="80" ry="20" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="2"/>
+  <ellipse cx="180" cy="280" rx="80" ry="20" fill="#ffffff" stroke="#e0e0e0" stroke-width="2"/>
   <!-- Handle -->
   <path d="M260 140 Q320 140 320 190 Q320 240 260 240" fill="none" stroke="#ffffff" stroke-width="20"/>
   <path d="M260 140 Q300 140 300 190 Q300 240 260 240" fill="none" stroke="#e0e0e0" stroke-width="16"/>

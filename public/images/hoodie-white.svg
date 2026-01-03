@@ -4,8 +4,6 @@
   <path d="M90 100 L140 100 L160 80 L240 80 L260 100 L310 100 L330 150 L300 170 L300 320 L100 320 L100 170 L70 150 Z" fill="#ffffff" stroke="#e0e0e0" stroke-width="2"/>
   <!-- Hood -->
   <path d="M140 100 L160 80 L240 80 L260 100 L250 60 L200 40 L150 60 Z" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="2"/>
-  <!-- Pocket -->
-  <path d="M130 250 L130 290 L270 290 L270 250 Q200 270 130 250" fill="#f0f0f0" stroke="#e0e0e0" stroke-width="1"/>
   <!-- Label -->
   <text x="200" y="360" text-anchor="middle" fill="#666" font-family="system-ui" font-size="14">White Hoodie</text>
 </svg>
