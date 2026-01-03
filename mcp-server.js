@@ -35,9 +35,9 @@ const PRINTFUL_PRODUCTS = {
     productId: 71,
     name: "Unisex Staple T-Shirt | Bella + Canvas 3001",
     variants: {
-      white: { S: 4012, M: 4013, L: 4014, XL: 4015, "2XL": 4015 },
+      white: { S: 4011, M: 4012, L: 4013, XL: 4014, "2XL": 4015 },
       black: { S: 4016, M: 4017, L: 4018, XL: 4019, "2XL": 4020 },
-      navy: { S: 4166, M: 4167, L: 4168, XL: 4169, "2XL": 4170 },
+      navy: { S: 4111, M: 4112, L: 4113, XL: 4114, "2XL": 4115 },
     },
     printfile: {
       width: 1800,
@@ -51,9 +51,9 @@ const PRINTFUL_PRODUCTS = {
     productId: 146,
     name: "Unisex Heavy Blend Hoodie | Gildan 18500",
     variants: {
-      white: { S: 5524, M: 5523, L: 5524, XL: 5525, "2XL": 5526 },
+      white: { S: 5522, M: 5523, L: 5524, XL: 5525, "2XL": 5526 },
       black: { S: 5530, M: 5531, L: 5532, XL: 5533, "2XL": 5534 },
-      gray: { S: 5581, M: 5582, L: 5583, XL: 5584, "2XL": 5585 },
+      gray: { S: 5610, M: 5611, L: 5612, XL: 5613, "2XL": 5614 },
     },
     printfile: {
       width: 1800,
@@ -80,7 +80,7 @@ const PRINTFUL_PRODUCTS = {
     productId: 1,
     name: "Enhanced Matte Paper Poster",
     variants: {
-      default: { "8x10": 6239, "12x18": 1, "18x24": 2 },
+      default: { "8x10": 4463, "12x18": 3876, "18x24": 1 },
     },
     printfile: {
       width: 1800,
