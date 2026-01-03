@@ -604,6 +604,12 @@
     // Make selectProduct globally accessible
     window.selectProduct = function(productId) {
       console.log('selectProduct called:', productId);
+
+      // Visual feedback - highlight clicked card
+      document.querySelectorAll('.product-card').forEach(c => c.classList.remove('selected'));
+      const clickedCard = document.querySelector(`[data-product-id="${productId}"]`);
+      if (clickedCard) clickedCard.classList.add('selected');
+
       console.log('currentState.products:', currentState.products);
       console.log('openai available:', !!window.openai);
       console.log('openai.callTool available:', !!window.openai?.callTool);
