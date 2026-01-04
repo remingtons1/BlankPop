@@ -89,6 +89,66 @@ const PRINTFUL_PRODUCTS = {
       position: { width: 1600, height: 1600, top: 100, left: 100 }
     },
   },
+  // Bestseller additions
+  comfort_tee: {
+    productId: 586,
+    name: "Heavyweight T-Shirt | Comfort Colors 1717",
+    variants: {
+      ivory: { S: 16523, M: 16524, L: 16525, XL: 16526, "2XL": 16527 },
+      black: { S: 15114, M: 15115, L: 15116, XL: 15117, "2XL": 15118 },
+      "blue jean": { S: 16511, M: 16512, L: 16513, XL: 16514, "2XL": 16515 },
+    },
+    printfile: {
+      width: 1800,
+      height: 2400,
+      placement: "front",
+      position: { width: 1200, height: 1200, top: 200, left: 300 }
+    },
+  },
+  champion_hoodie: {
+    productId: 842,
+    name: "Champion Hoodie",
+    variants: {
+      black: { S: 22299, M: 22301, L: 22303, XL: 22305, "2XL": 22307 },
+      "light steel": { S: 22300, M: 22302, L: 22304, XL: 22306, "2XL": 22308 },
+    },
+    printfile: {
+      width: 1800,
+      height: 2400,
+      placement: "front",
+      position: { width: 1100, height: 1100, top: 250, left: 350 }
+    },
+  },
+  tank: {
+    productId: 248,
+    name: "Tank Top | Bella + Canvas 3480",
+    variants: {
+      white: { S: 8659, M: 8660, L: 8661, XL: 8662, "2XL": 8663 },
+      black: { S: 8629, M: 8630, L: 8631, XL: 8632, "2XL": 8633 },
+      heather: { S: 8635, M: 8636, L: 8637, XL: 8638, "2XL": 8639 },
+    },
+    printfile: {
+      width: 1800,
+      height: 2400,
+      placement: "front",
+      position: { width: 1000, height: 1000, top: 150, left: 400 }
+    },
+  },
+  sweatshirt: {
+    productId: 145,
+    name: "Crewneck Sweatshirt | Gildan 18000",
+    variants: {
+      white: { S: 5426, M: 5427, L: 5428, XL: 5429, "2XL": 5430 },
+      black: { S: 5434, M: 5435, L: 5436, XL: 5437, "2XL": 5438 },
+      gray: { S: 5514, M: 5515, L: 5516, XL: 5517, "2XL": 5518 },
+    },
+    printfile: {
+      width: 1800,
+      height: 2400,
+      placement: "front",
+      position: { width: 1100, height: 1100, top: 250, left: 350 }
+    },
+  },
 };
 
 // In-memory store for generated designs
@@ -106,6 +166,11 @@ const PRODUCTS = [
   { id: "hoodie", name: "Hoodie", basePrice: 49, colors: ["white", "black", "gray"], sizes: ["S", "M", "L", "XL"] },
   { id: "mug", name: "Ceramic Mug", basePrice: 18, colors: ["white"], sizes: ["11oz", "15oz"] },
   { id: "poster", name: "Premium Poster", basePrice: 20, colors: [], sizes: ["8x10", "12x18", "18x24"] },
+  // Bestsellers
+  { id: "comfort_tee", name: "Heavyweight Tee", basePrice: 32, colors: ["ivory", "black", "blue jean"], sizes: ["S", "M", "L", "XL"] },
+  { id: "champion_hoodie", name: "Champion Hoodie", basePrice: 59, colors: ["black", "light steel"], sizes: ["S", "M", "L", "XL"] },
+  { id: "tank", name: "Tank Top", basePrice: 25, colors: ["white", "black", "heather"], sizes: ["S", "M", "L", "XL"] },
+  { id: "sweatshirt", name: "Crewneck", basePrice: 39, colors: ["white", "black", "gray"], sizes: ["S", "M", "L", "XL"] },
 ];
 
 // Ensure designs directory exists
@@ -233,6 +298,20 @@ async function generatePrintfulMockup(designImageUrl, productId, color, size) {
           if (frontView?.url) {
             mockupUrl = frontView.url;
             console.log(`Using mug front view: ${mockupUrl}`);
+          }
+        } else {
+          // For apparel, prefer lifestyle/model shots if available
+          const lifestyleOptions = ["On model", "Lifestyle", "Model", "Front"];
+          for (const option of lifestyleOptions) {
+            const lifestyle = extras.find(e =>
+              (e.option && e.option.includes(option)) ||
+              (e.title && e.title.includes(option))
+            );
+            if (lifestyle?.url) {
+              mockupUrl = lifestyle.url;
+              console.log(`Using lifestyle mockup (${option}): ${mockupUrl}`);
+              break;
+            }
           }
         }
 

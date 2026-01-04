@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#1a1a1a"/>
+  <!-- Tank Top body - Heather Gray -->
+  <path d="M130 70 L160 60 L240 60 L270 70 L280 320 L120 320 Z" fill="#9CA3AF" stroke="#8B929F" stroke-width="2"/>
+  <!-- Armholes -->
+  <path d="M130 70 L100 100 L110 160 L130 150" fill="#1a1a1a" stroke="#8B929F" stroke-width="2"/>
+  <path d="M270 70 L300 100 L290 160 L270 150" fill="#1a1a1a" stroke="#8B929F" stroke-width="2"/>
+  <!-- Neckline -->
+  <path d="M160 60 Q200 90 240 60" fill="none" stroke="#8B929F" stroke-width="2"/>
+  <!-- Label -->
+  <text x="200" y="360" text-anchor="middle" fill="#666" font-family="system-ui" font-size="14">Tank Top</text>
+</svg>

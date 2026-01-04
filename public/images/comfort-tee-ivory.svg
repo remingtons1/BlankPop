@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#1a1a1a"/>
+  <!-- Heavyweight T-Shirt body (boxy/relaxed fit) -->
+  <path d="M100 80 L150 80 L170 60 L230 60 L250 80 L300 80 L320 120 L280 140 L280 320 L120 320 L120 140 L80 120 Z" fill="#FFFFF0" stroke="#e0e0c0" stroke-width="2"/>
+  <!-- Collar -->
+  <ellipse cx="200" cy="80" rx="40" ry="15" fill="#F5F5DC" stroke="#e0e0c0" stroke-width="2"/>
+  <!-- Sleeves -->
+  <path d="M100 80 L60 140 L80 150 L120 100" fill="#FFFFF0" stroke="#e0e0c0" stroke-width="2"/>
+  <path d="M300 80 L340 140 L320 150 L280 100" fill="#FFFFF0" stroke="#e0e0c0" stroke-width="2"/>
+  <!-- Label -->
+  <text x="200" y="360" text-anchor="middle" fill="#666" font-family="system-ui" font-size="14">Heavyweight Tee</text>
+</svg>

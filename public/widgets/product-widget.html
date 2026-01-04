@@ -281,6 +281,11 @@
     .color-black { background: #222; }
     .color-navy { background: #1e3a5f; }
     .color-gray { background: #6b7280; }
+    /* Bestseller colors */
+    .color-ivory { background: #FFFFF0; }
+    .color-blue\ jean, .color-blue-jean { background: #5B7C99; }
+    .color-light\ steel, .color-light-steel { background: #B0C4DE; }
+    .color-heather { background: #9CA3AF; }
 
     /* Buttons */
     .btn-primary {
@@ -843,7 +848,7 @@
 
     // Product images mapping (using blankpop.online)
     const BASE_URL = 'https://blankpop.online';
-    const IMG_VERSION = 'v7'; // Cache buster - increment when SVGs change
+    const IMG_VERSION = 'v8'; // Cache buster - increment when SVGs change
     const productImages = {
       'tshirt-white': `${BASE_URL}/images/tshirt-white.svg?${IMG_VERSION}`,
       'tshirt-black': `${BASE_URL}/images/tshirt-black.svg?${IMG_VERSION}`,
@@ -852,7 +857,19 @@
       'hoodie-black': `${BASE_URL}/images/hoodie-black.svg?${IMG_VERSION}`,
       'hoodie-gray': `${BASE_URL}/images/hoodie-gray.svg?${IMG_VERSION}`,
       'mug-white': `${BASE_URL}/images/mug-white.svg?${IMG_VERSION}`,
-      'poster': `${BASE_URL}/images/poster.svg?${IMG_VERSION}`
+      'poster': `${BASE_URL}/images/poster.svg?${IMG_VERSION}`,
+      // Bestsellers
+      'comfort_tee-ivory': `${BASE_URL}/images/comfort-tee-ivory.svg?${IMG_VERSION}`,
+      'comfort_tee-black': `${BASE_URL}/images/comfort-tee-black.svg?${IMG_VERSION}`,
+      'comfort_tee-blue jean': `${BASE_URL}/images/comfort-tee-blue.svg?${IMG_VERSION}`,
+      'champion_hoodie-black': `${BASE_URL}/images/champion-hoodie-black.svg?${IMG_VERSION}`,
+      'champion_hoodie-light steel': `${BASE_URL}/images/champion-hoodie-steel.svg?${IMG_VERSION}`,
+      'tank-white': `${BASE_URL}/images/tank-white.svg?${IMG_VERSION}`,
+      'tank-black': `${BASE_URL}/images/tank-black.svg?${IMG_VERSION}`,
+      'tank-heather': `${BASE_URL}/images/tank-heather.svg?${IMG_VERSION}`,
+      'sweatshirt-white': `${BASE_URL}/images/sweatshirt-white.svg?${IMG_VERSION}`,
+      'sweatshirt-black': `${BASE_URL}/images/sweatshirt-black.svg?${IMG_VERSION}`,
+      'sweatshirt-gray': `${BASE_URL}/images/sweatshirt-gray.svg?${IMG_VERSION}`,
     };
 
     // Initialize

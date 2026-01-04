@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#1a1a1a"/>
+  <!-- Champion Hoodie body - Light Steel -->
+  <path d="M90 100 L140 100 L160 80 L240 80 L260 100 L310 100 L330 150 L300 170 L300 320 L100 320 L100 170 L70 150 Z" fill="#B0C4DE" stroke="#9FB3CD" stroke-width="2"/>
+  <!-- Hood -->
+  <path d="M140 100 L160 80 L240 80 L260 100 L250 60 L200 40 L150 60 Z" fill="#C0D4EE" stroke="#9FB3CD" stroke-width="2"/>
+  <!-- Champion C logo hint -->
+  <circle cx="120" cy="200" r="15" fill="none" stroke="#cc0000" stroke-width="3"/>
+  <!-- Label -->
+  <text x="200" y="360" text-anchor="middle" fill="#666" font-family="system-ui" font-size="14">Champion Hoodie</text>
+</svg>
