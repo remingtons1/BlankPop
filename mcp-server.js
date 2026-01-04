@@ -735,6 +735,9 @@ server.registerTool(
             },
           ],
           mode: "payment",
+          shipping_address_collection: {
+            allowed_countries: ["US", "CA", "GB", "AU", "DE", "FR", "ES", "IT", "NL", "SE", "NO", "DK", "FI"],
+          },
           success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: `${baseUrl}/checkout/cancel`,
           metadata: {
@@ -933,6 +936,9 @@ const httpServer = http.createServer(async (req, res) => {
             },
           ],
           mode: "payment",
+          shipping_address_collection: {
+            allowed_countries: ["US", "CA", "GB", "AU", "DE", "FR", "ES", "IT", "NL", "SE", "NO", "DK", "FI"],
+          },
           success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
           cancel_url: `${baseUrl}/checkout/cancel`,
           metadata: {
