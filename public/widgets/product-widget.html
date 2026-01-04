@@ -1295,9 +1295,8 @@
       document.getElementById('hero-product-name').textContent = `${colorName}${product.name}`;
       document.getElementById('hero-product-price').textContent = `$${product.basePrice}`;
 
-      // Update buy button with total
-      const total = (product.basePrice + 5.99).toFixed(2);
-      document.getElementById('hero-buy-btn').textContent = `Buy Now - $${total}`;
+      // Update buy button with product price (shipping shown at checkout)
+      document.getElementById('hero-buy-btn').textContent = `Buy Now - $${product.basePrice}`;
 
       // Render color options
       const colorOptions = document.getElementById('hero-color-options');
